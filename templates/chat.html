@@ -64,7 +64,7 @@
 
     <!-- Chat Header -->
     <header class="bg-white dark:bg-[#152e22] shadow-sm px-4 py-3 flex items-center gap-3 border-b border-gray-100 dark:border-white/5">
-        <a href="/" class="text-slate-500 hover:text-primary transition-colors">
+        <a href="/explore" class="text-slate-500 hover:text-primary transition-colors">
             <span class="material-icons">arrow_back</span>
         </a>
         <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center border border-primary/20 overflow-hidden">
@@ -216,41 +216,54 @@
             return div.innerHTML;
         }
 
-        // ─────────────────────────────────────────────
-        // Chat API Iletisimi
-        // ─────────────────────────────────────────────
-        async function sendMessage(message) {
-            try {
-                showTyping();
+            // ─────────────────────────────────────────────
+            // Chat API Iletisimi
+            // ─────────────────────────────────────────────
+            async function sendMessage(message) {
+                try {
+                    showTyping();
 
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        entity_id: ENTITY.id,
-                        message: message,
-                        conversation_history: conversationHistory
-                    })
-                });
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            entity_id: ENTITY.id,
+                            message: message,
+                            conversation_history: conversationHistory
+                        })
+                    });
 
-                const data = await response.json();
-                hideTyping();
+                    const data = await response.json();
+                    hideTyping();
 
-                if (data.reply) {
-                    addBotMessage(data.reply);
-                    conversationHistory.push(
-                        { role: 'user', content: message },
-                        { role: 'assistant', content: data.reply }
-                    );
-                } else {
-                    addBotMessage('Hmm, bir sorun oldu. Tekrar dener misin?');
+                    if (data.reply) {
+                        addBotMessage(data.reply);
+                        conversationHistory.push(
+                            { role: 'user', content: message },
+                            { role: 'assistant', content: data.reply }
+                        );
+                        
+                        // Limit kontrolü
+                        if (data.limit_reached) {
+                            endConversation();
+                        }
+                        
+                    } else {
+                        addBotMessage('Hmm, bir sorun oldu. Tekrar dener misin?');
+                    }
+                } catch (error) {
+                    hideTyping();
+                    addBotMessage('Baglanti hatasi olustu. Lütfen tekrar deneyin.');
+                    console.error('Chat API error:', error);
                 }
-            } catch (error) {
-                hideTyping();
-                addBotMessage('Baglanti hatasi olustu. Lütfen tekrar deneyin.');
-                console.error('Chat API error:', error);
             }
-        }
+            
+            function endConversation() {
+                messageInput.disabled = true;
+                messageInput.placeholder = "Sohbet sonlandı.";
+                document.querySelector('button[type="submit"]').disabled = true;
+                addBotMessage("🌿 Bu sohbetin mesaj limitine ulaşıldı. Başka bir karakterle konuşmak için Keşfet sayfasına dönebilirsin.");
+            }
 
         // ─────────────────────────────────────────────
         // Form Submit

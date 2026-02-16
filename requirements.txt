@@ -1,17 +1,4 @@
-# DendroVox - Python Bağımlılıkları
-# ===================================
-
-# Web Framework
 Flask==3.1.0
-
-# Ortam değişkenleri yönetimi
 python-dotenv==1.0.1
-
-# Supabase Python client (sonradan aktifleştirilecek)
-# supabase==2.11.0
-
-# AI/LLM Entegrasyonu (sonradan aktifleştirilecek)
-# openai==1.59.0
-
-# CORS desteği (frontend-backend iletişimi)
 flask-cors==5.0.0
+google-genai==1.2.0

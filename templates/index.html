@@ -1,338 +1,41 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
 
-<html class="scroll-smooth" lang="tr"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DendroVox - Doğanın Sesi</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#13ec6d",
-                        "primary-dark": "#0fb854",
-                        "background-light": "#f6f8f7",
-                        "background-dark": "#102218",
-                        "glass": "rgba(255, 255, 255, 0.1)",
-                        "glass-border": "rgba(255, 255, 255, 0.2)",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
-<style>
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .text-shadow {
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-    </style>
-</head>
-<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased selection:bg-primary selection:text-black">
-<!-- Navigation -->
-<nav class="fixed w-full z-50 transition-all duration-300 glass-panel border-b border-white/10">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-20">
-<div class="flex items-center gap-2">
-<span class="material-icons text-primary text-3xl">forest</span>
-<span class="font-bold text-xl tracking-tight text-white">DendroVox</span>
-</div>
-<div class="hidden md:block">
-<div class="ml-10 flex items-baseline space-x-8">
-<a class="text-white hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#concept">Hikaye</a>
-<a class="text-white hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#how-it-works">Nasıl Çalışır?</a>
-<a class="text-white hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors" href="#features">Özellikler</a>
-</div>
-</div>
-<div>
-<a class="bg-primary hover:bg-primary-dark text-background-dark font-semibold px-6 py-2.5 rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(19,236,109,0.3)] hover:shadow-[0_0_30px_rgba(19,236,109,0.5)]" href="#start">
-                        Keşfet
-                    </a>
-</div>
-</div>
-</div>
-</nav>
+{% block title %}DendroVox - Doğanın Sesi{% endblock %}
+
+{% block content %}
 <!-- Hero Section -->
-<div class="relative min-h-screen flex items-center justify-center overflow-hidden">
-<!-- Background Image -->
-<div class="absolute inset-0 z-0">
-<img alt="Misty mystical forest with morning light filtering through trees" class="w-full h-full object-cover" data-alt="Misty mystical forest with morning light filtering through trees" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhyOZWU9qLXIRBnmE_wPYJEu6xK6F3l6tVGW2mRHHrSRKLeqxkxSgiEBXIUgV61vs_W5N5vC5gq9Xk8z1bf7SDsDDaj-ZUmoTmTJPMBTSKpwjt4g2f1JbSTcZwt1tOyPKBMQDn9ACGcACiXnbYxxi1SXtwH9-NyosKLc2d1wS4YBKwTv0Ts4-axGASE8D7sSjLHKpD1wHOeVAaR-LcJu8F1K4dwP9VMAjjp2NyjRpdF6CrbMe1NJ2FPoE3OoHvuLz3VHWqvB3uGPgr"/>
-<div class="absolute inset-0 bg-background-dark/40 mix-blend-multiply"></div>
-<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
-</div>
-<!-- Hero Content -->
-<div class="relative z-10 container mx-auto px-4 pt-24 pb-24 md:pt-32 md:pb-32">
-<div class="max-w-3xl mx-auto text-center">
-<div class="glass-panel p-8 md:p-12 rounded-2xl shadow-2xl animate-fade-in-up">
-<span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-6 uppercase">
-                        AI Destekli Doğa Deneyimi
-                    </span>
-<h1 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-                        Doğanın Sessiz Tanıklarını <br/>
-<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-200">Dinlemeye Hazır mısın?</span>
-</h1>
-<p class="text-lg md:text-xl text-gray-200 mb-8 font-light leading-relaxed">
-                        Parklarda yürürken ağaçların, kedi evlerinin ve doğanın size fısıldadıklarını duyun. Teknoloji ve doğanın mistik birleşimi.
-                    </p>
-<div class="flex flex-col sm:flex-row justify-center gap-4">
-<button class="bg-primary hover:bg-white text-background-dark font-bold py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
-<span>Sohbete Başla</span>
-<span class="material-icons text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
-<button class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 font-medium py-3.5 px-8 rounded-xl transition-all duration-300">
-                            Nasıl Çalışır?
-                        </button>
-</div>
-</div>
-</div>
-</div>
-</div>
-
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-[#0b1610] border-t border-slate-200 dark:border-white/5 pt-16 pb-8">
-        <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-12">
-        <div class="flex items-center gap-2 mb-4 md:mb-0">
-        <span class="material-icons text-primary text-3xl">forest</span>
-        <span class="font-bold text-2xl text-slate-900 dark:text-white">DendroVox</span>
+<div class="hero-section relative min-h-screen flex flex-col justify-center overflow-hidden py-24 md:py-32">
+    <!-- Background Image -->
+    <div class="absolute inset-0 z-0">
+        <img alt="Misty mystical forest with morning light filtering through trees" class="w-full h-full object-cover" data-alt="Misty mystical forest with morning light filtering through trees" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhyOZWU9qLXIRBnmE_wPYJEu6xK6F3l6tVGW2mRHHrSRKLeqxkxSgiEBXIUgV61vs_W5N5vC5gq9Xk8z1bf7SDsDDaj-ZUmoTmTJPMBTSKpwjt4g2f1JbSTcZwt1tOyPKBMQDn9ACGcACiXnbYxxi1SXtwH9-NyosKLc2d1wS4YBKwTv0Ts4-axGASE8D7sSjLHKpD1wHOeVAaR-LcJu8F1K4dwP9VMAjjp2NyjRpdF6CrbMe1NJ2FPoE3OoHvuLz3VHWqvB3uGPgr"/>
+        <div class="absolute inset-0 bg-background-dark/40 mix-blend-multiply"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
+    </div>
+    <!-- Hero Content -->
+    <div class="relative z-10 container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="glass-panel p-8 md:p-12 rounded-2xl shadow-2xl animate-fade-in-up">
+                <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-6 uppercase">
+                    AI Destekli Doğa Deneyimi
+                </span>
+                <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                    Doğanın Sessiz Tanıklarını <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-200">Dinlemeye Hazır mısın?</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-200 mb-8 font-light leading-relaxed">
+                    Parklarda yürürken ağaçların, kedi evlerinin ve doğanın size fısıldadıklarını duyun. Teknoloji ve doğanın mistik birleşimi.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="/explore" class="bg-primary hover:bg-white text-background-dark font-bold py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+                        <span>Sohbete Başla</span>
+                        <span class="material-icons text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </a>
+                    <a href="/how-it-works" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 font-medium py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center justify-center">
+                        Nasıl Çalışır?
+                    </a>
+                </div>
+            </div>
         </div>
-        <div class="flex gap-6">
-        </div>
-        </div>
-        <div class="border-t border-slate-200 dark:border-white/10 pt-8">
-        <div class="max-w-4xl mx-auto text-center">
-        <p class="text-xs text-slate-400 leading-relaxed mb-4">
-        <strong>Akademik Sorumluluk Reddi:</strong> DendroVox, insan-bilgisayar etkileşimi ve kentsel ekoloji farkındalığı üzerine deneysel bir araştırma projesidir. Sunulan içerikler yapay zeka tarafından üretilmekte olup, ağaçların gerçek biyolojik verileriyle kurgusal anlatıyı birleştirmektedir.
-                            </p>
-        <p class="text-sm text-slate-500">
-                                © 2026 DendroVox Project. Tüm hakları saklıdır.
-                            </p>
-        </div>
-        </div>
-        </div>
-        </footer>
-        </body>
-</html> 
-
-<!-- YEDEK EKRAN -->
-
-<div style="display:none;">
-    <!-- Concept Section -->
-    <section class="py-24 bg-background-light dark:bg-background-dark relative overflow-hidden" id="concept">
-    <div class="container mx-auto px-4">
-    <div class="flex flex-col lg:flex-row items-center gap-16">
-    <!-- Image Side -->
-    <div class="w-full lg:w-1/2 relative">
-    <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl"></div>
-    <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
-    <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-white/10 group">
-    <img alt="Ancient tree trunk with moss and detailed bark texture in a forest" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" data-alt="Ancient tree trunk with moss and detailed bark texture in a forest" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKp6wIgR7pHYUB1Cb0ENmKfSHPdPmObamhXRDFEArKZdRS8GhByND5soGPYKmqJvJN6vhZOd4BxHdAwr8TzZpKar4U_Lv_wRui6zI3X4P0_IbpgIOIyU5FPWpI34PQP2FEq9Xq_52bb4wnLrF5hY5tMU-Pf0E4O2ljvRqtpGyOh-vbD0te4-pCt8Ynu1YobJVTsHnRk6jU_UQEZQmktIY641fN4TFtIswFr1XPudTXgT4wTGtmOi9nIwNc7BqQg9gW7Q31X059CrC6"/>
-    <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-    <div class="flex items-center gap-3">
-    <div class="bg-primary/90 p-2 rounded-lg text-background-dark">
-    <span class="material-icons text-xl">qr_code_scanner</span>
     </div>
-    <div class="text-white">
-    <p class="text-xs opacity-75">Taranan Nesne</p>
-    <p class="font-bold">Asırlık Meşe Ağacı</p>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    <!-- Text Side -->
-    <div class="w-full lg:w-1/2">
-    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-                            Her Ağacın Bir <span class="text-primary">Hikayesi</span> Var
-                        </h2>
-    <p class="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                            DendroVox, parklardaki nesnelere ses verir. Yanından geçip gittiğiniz o yaşlı çınar ağacı, köşedeki kedi evi veya parkın ortasındaki heykel... Hepsi yapay zeka sayesinde dile geliyor.
-                        </p>
-    <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
-                            Sadece biyolojik bilgiler değil, onların "gördükleri", "hissettikleri" ve tanıklık ettikleri tarihi 1. ağızdan dinleyin. Doğayı bir ders kitabı gibi değil, yaşayan bir dost gibi deneyimleyin.
-                        </p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div class="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 shadow-sm">
-    <span class="material-icons text-primary mt-1">park</span>
-    <div>
-    <h4 class="font-bold text-slate-900 dark:text-white">Ağaçlar</h4>
-    <p class="text-sm text-slate-500 dark:text-slate-400">Yüzlerce yıllık tanıklıklarını anlatır.</p>
-    </div>
-    </div>
-    <div class="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 shadow-sm">
-    <span class="material-icons text-primary mt-1">pets</span>
-    <div>
-    <h4 class="font-bold text-slate-900 dark:text-white">Kedi Evleri</h4>
-    <p class="text-sm text-slate-500 dark:text-slate-400">Park sakinlerinin günlük maceralarını fısıldar.</p>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </section>
-    <!-- How it Works Section -->
-    <section class="py-24 bg-white dark:bg-[#0b1a12]" id="how-it-works">
-    <div class="container mx-auto px-4">
-    <div class="text-center max-w-2xl mx-auto mb-16">
-    <span class="text-primary font-semibold tracking-wider text-sm uppercase">Kolay Erişim</span>
-    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mt-2 mb-4">Nasıl Çalışır?</h2>
-    <div class="flex flex-wrap justify-center gap-4 mt-6">
-    <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium">
-    <span class="material-icons text-sm mr-1">block</span> Uygulama İndirmek Yok
-                        </span>
-    <span class="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-medium">
-    <span class="material-icons text-sm mr-1">no_accounts</span> Üyelik Yok
-                        </span>
-    </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-    <!-- Connector Line (Desktop) -->
-    <div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent border-t-2 border-dashed border-primary/30 z-0"></div>
-    <!-- Step 1 -->
-    <div class="relative z-10 flex flex-col items-center text-center group">
-    <div class="w-24 h-24 rounded-2xl bg-background-light dark:bg-background-dark border-2 border-primary shadow-[0_0_15px_rgba(19,236,109,0.2)] flex items-center justify-center mb-6 transition-transform group-hover:-translate-y-2">
-    <span class="material-icons text-4xl text-primary">qr_code_2</span>
-    </div>
-    <div class="absolute -top-3 -right-3 md:right-[25%] bg-primary text-background-dark w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">1</div>
-    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">QR Kodu Bul</h3>
-    <p class="text-slate-600 dark:text-slate-400 max-w-xs">Parktaki ağaçların veya nesnelerin üzerindeki özel DendroVox etiketini bulun.</p>
-    </div>
-    <!-- Step 2 -->
-    <div class="relative z-10 flex flex-col items-center text-center group">
-    <div class="w-24 h-24 rounded-2xl bg-background-light dark:bg-background-dark border-2 border-primary shadow-[0_0_15px_rgba(19,236,109,0.2)] flex items-center justify-center mb-6 transition-transform group-hover:-translate-y-2 delay-75">
-    <span class="material-icons text-4xl text-primary">photo_camera</span>
-    </div>
-    <div class="absolute -top-3 -right-3 md:right-[25%] bg-primary text-background-dark w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">2</div>
-    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Tarat</h3>
-    <p class="text-slate-600 dark:text-slate-400 max-w-xs">Telefonunuzun kamerasıyla QR kodu okutun. Saniyeler içinde açılacaktır.</p>
-    </div>
-    <!-- Step 3 -->
-    <div class="relative z-10 flex flex-col items-center text-center group">
-    <div class="w-24 h-24 rounded-2xl bg-background-light dark:bg-background-dark border-2 border-primary shadow-[0_0_15px_rgba(19,236,109,0.2)] flex items-center justify-center mb-6 transition-transform group-hover:-translate-y-2 delay-150">
-    <span class="material-icons text-4xl text-primary">chat_bubble</span>
-    </div>
-    <div class="absolute -top-3 -right-3 md:right-[25%] bg-primary text-background-dark w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">3</div>
-    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Sohbete Başla</h3>
-    <p class="text-slate-600 dark:text-slate-400 max-w-xs">Doğanın size anlatacaklarını dinleyin, sorular sorun ve öğrenmeye başlayın.</p>
-    </div>
-    </div>
-    </div>
-    </section>
-    <!-- Features Section / Chat UI -->
-    <section class="py-24 bg-background-light dark:bg-background-dark relative" id="features">
-    <div class="absolute inset-0 overflow-hidden">
-    <div class="absolute top-1/4 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-1/4 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-    </div>
-    <div class="container mx-auto px-4 relative z-10">
-    <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
-    <!-- Chat UI Mockup -->
-    <div class="w-full lg:w-5/12 mx-auto lg:mx-0 order-2 lg:order-1">
-    <div class="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] sm:w-[340px] shadow-xl overflow-hidden">
-    <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
-    <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
-    <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
-    <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-    <!-- Screen Content -->
-    <div class="rounded-[2rem] overflow-hidden w-full h-full bg-[#f0fdf4] dark:bg-[#0b1a12] flex flex-col relative">
-    <!-- Status Bar -->
-    <div class="h-8 w-full bg-white/10 backdrop-blur-md absolute top-0 z-20"></div>
-    <!-- Chat Header -->
-    <div class="pt-10 pb-4 px-4 bg-white dark:bg-[#152e22] shadow-sm flex items-center gap-3 z-10">
-    <div class="w-10 h-10 rounded-full bg-green-100 overflow-hidden border border-primary/20">
-    <img alt="Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTLQAWSB1nuJhDWfNV93_EcYWgpNptXujK0EdlTnqJTo_d8eMo8do6gJkk-319y98tCrL5dLztfBcgewPSQCUvG5074fdA_nC5aGmAexma5i-DK_2fAF8mjAer2SWUmLBYgNKUpesh51SXWb6lnb7H7eH-Q_P4d-g3Lz4tRglrOeEstXPyRoV4Z9IWqLng0lIS1wgrlIdjt6llwMrXU0yD1_Ozwkc9iJtcZkXDjL7MJmUl1vwZDdFiO9Qy59squQhWtMJ5YFxufMtn"/>
-    </div>
-    <div>
-    <h3 class="font-bold text-sm text-slate-900 dark:text-white">Ulu Çınar</h3>
-    <p class="text-xs text-primary flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Çevrimiçi</p>
-    </div>
-    </div>
-    <!-- Messages -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
-    <div class="text-xs text-center text-gray-400 my-2">Bugün 14:30</div>
-    <!-- Bot Message -->
-    <div class="flex items-end gap-2">
-    <div class="bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] border border-gray-100 dark:border-white/5">
-    <p class="text-sm text-slate-700 dark:text-slate-200">Merhaba gezgin! Ben bu parkın en yaşlısıyım. Tam 120 yıldır buradayım. Yapraklarımda hissettiğim rüzgarın hikayesini duymak ister misin?</p>
-    </div>
-    </div>
-    <!-- User Message -->
-    <div class="flex items-end gap-2 justify-end">
-    <div class="bg-primary p-3 rounded-2xl rounded-br-none shadow-md max-w-[85%]">
-    <p class="text-sm text-background-dark font-medium">Merhaba! Evet lütfen, buraya ilk dikildiğinde etraf nasıldı?</p>
-    </div>
-    </div>
-    <!-- Bot Message -->
-    <div class="flex items-end gap-2">
-    <div class="bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] border border-gray-100 dark:border-white/5">
-    <p class="text-sm text-slate-700 dark:text-slate-200">O zamanlar buralar hep tarlaydı... Şaka yapmıyorum! Hemen yanımdaki şu beton yolun olduğu yerden küçük bir dere akardı. Sincap dostlarım o dereden su içerdi.</p>
-    </div>
-    </div>
-    </div>
-    <!-- Input Area -->
-    <div class="p-3 bg-white dark:bg-[#152e22] border-t border-gray-100 dark:border-white/5">
-    <div class="flex items-center gap-2 bg-gray-100 dark:bg-black/20 rounded-full px-4 py-2">
-    <input class="bg-transparent border-none text-sm w-full focus:ring-0 px-0 dark:text-white" disabled="" placeholder="Bir şeyler sor..." type="text"/>
-    <button class="text-primary"><span class="material-icons text-xl">send</span></button>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    <!-- Features Text -->
-    <div class="w-full lg:w-6/12 order-1 lg:order-2">
-    <h2 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-8">
-                            Doğayı <br/>
-    <span class="text-primary">Keşfetmenin</span> <br/>
-                            En Modern Yolu
-                        </h2>
-    <div class="space-y-8">
-    <div class="flex gap-4">
-    <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
-    <span class="material-icons text-blue-600 dark:text-blue-400">history_edu</span>
-    </div>
-    <div>
-    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Tarihsel Derinlik</h3>
-    <p class="text-slate-600 dark:text-slate-400">Ağacın dikildiği günden bugüne bölgenin değişimini dinleyin. Yerel tarih hiç bu kadar canlı olmamıştı.</p>
-    </div>
-    </div>
-    <div class="flex gap-4">
-    <div class="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/20 flex items-center justify-center shrink-0">
-    <span class="material-icons text-green-600 dark:text-green-400">biotech</span>
-    </div>
-    <div>
-    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Biyolojik Bilgi</h3>
-    <p class="text-slate-600 dark:text-slate-400">Tür özellikleri, fotosentez süreci ve ekosistemdeki rolü hakkında bilimsel ama eğlenceli bilgiler.</p>
-    </div>
-    </div>
-    <div class="flex gap-4">
-    <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center shrink-0">
-    <span class="material-icons text-purple-600 dark:text-purple-400">sentiment_satisfied_alt</span>
-    </div>
-    <div>
-    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Duygusal Bağ</h3>
-    <p class="text-slate-600 dark:text-slate-400">Soğuk ansiklopedik bilgiler yerine, "Dün yağan yağmur köklerime çok iyi geldi" diyen bir dost.</p>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </section>   
 </div>
+{% endblock %}

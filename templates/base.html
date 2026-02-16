@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="tr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}DendroVox - Doğanın Sesi{% endblock %}</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec6d",
+                        "primary-dark": "#0fb854",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#102218",
+                        "glass": "rgba(255, 255, 255, 0.1)",
+                        "glass-border": "rgba(255, 255, 255, 0.2)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-scrolled {
+            background-color: rgba(16, 34, 24, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .nav-transparent {
+            background-color: transparent;
+            border-bottom: 1px solid transparent;
+            padding-top: 1.5rem !important;
+            padding-bottom: 1.5rem !important;
+        }
+        .nav-default {
+            background-color: rgba(16, 34, 24, 0.9);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 1.5rem !important;
+            padding-bottom: 1.5rem !important;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased selection:bg-primary selection:text-black flex flex-col min-h-screen">
+    <!-- Navigation -->
+    <nav id="main-nav" class="fixed w-full z-50 transition-all duration-500 ease-in-out py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <a href="/" class="flex items-center gap-2 group">
+                        <div class="bg-primary/10 p-1.5 rounded-lg group-hover:bg-primary/20 transition-colors">
+                            <span class="material-icons text-primary text-3xl">forest</span>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight text-white group-hover:text-primary transition-colors">DendroVox</span>
+                    </a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-1">
+                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/story">Hikaye</a>
+                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/how-it-works">Nasıl Çalışır?</a>
+                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/features">Özellikler</a>
+                    </div>
+                </div>
+                <div>
+                    <a class="bg-primary hover:bg-primary-dark text-background-dark font-bold px-6 py-2.5 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(19,236,109,0.2)] hover:shadow-[0_0_25px_rgba(19,236,109,0.4)] hover:-translate-y-0.5 flex items-center gap-2" href="/explore">
+                        <span>Keşfet</span>
+                        <span class="material-icons text-sm">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow pt-0">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-[#0b1610] border-t border-slate-200 dark:border-white/5 pt-16 pb-8 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-12">
+                <div class="flex items-center gap-2 mb-4 md:mb-0">
+                    <span class="material-icons text-primary text-3xl">forest</span>
+                    <span class="font-bold text-2xl text-slate-900 dark:text-white">DendroVox</span>
+                </div>
+                <div class="flex gap-6">
+                    <!-- Social Icons (Placeholder) -->
+                </div>
+            </div>
+            <div class="border-t border-slate-200 dark:border-white/10 pt-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                        <strong>Akademik Sorumluluk Reddi:</strong> DendroVox, insan-bilgisayar etkileşimi ve kentsel ekoloji farkındalığı üzerine deneysel bir araştırma projesidir. Sunulan içerikler yapay zeka tarafından üretilmekte olup, ağaçların gerçek biyolojik verileriyle kurgusal anlatıyı birleştirmektedir.
+                    </p>
+                    <p class="text-sm text-slate-500">
+                        © 2026 DendroVox Project. Tüm hakları saklıdır.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nav = document.getElementById('main-nav');
+            const isHeroPage = document.querySelector('.hero-section');
+            
+            function updateNav() {
+                if (window.scrollY > 20) {
+                    // Scroll yapıldığında
+                    nav.classList.add('nav-scrolled');
+                    nav.classList.remove('nav-transparent', 'nav-default');
+                } else {
+                    // En tepedeyken
+                    nav.classList.remove('nav-scrolled');
+                    
+                    if (isHeroPage) {
+                        // Hero sayfasında şeffaf
+                        nav.classList.add('nav-transparent');
+                        nav.classList.remove('nav-default');
+                    } else {
+                        // Diğer sayfalarda hafif koyu
+                        nav.classList.add('nav-default');
+                        nav.classList.remove('nav-transparent');
+                    }
+                }
+            }
+
+            window.addEventListener('scroll', updateNav);
+            updateNav(); // İlk yüklemede çalıştır
+        });
+    </script>
+</body>
+</html>
