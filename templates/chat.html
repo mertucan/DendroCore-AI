@@ -4,6 +4,10 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{{ entity.name }} ile Sohbet - DendroVox</title>
+    <meta name="description" content="{{ entity.name }} ile sohbet et - DendroVox"/>
+    <meta name="theme-color" content="#13ec6d"/>
+    <link rel="manifest" href="/static/manifest.json"/>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>"/>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -29,35 +33,65 @@
     </script>
     <style>
         .typing-indicator span {
-            animation: typing 1.4s infinite;
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #13ec6d;
-            margin: 0 2px;
+            display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+            background: #13ec6d; margin: 0 2px;
+            animation: typingBounce 1.4s infinite ease-in-out;
         }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-8px); opacity: 1; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+            30% { transform: translateY(-10px); opacity: 1; }
         }
-        .message-enter {
-            animation: messageSlide 0.3s ease-out;
+        @keyframes botSlideIn {
+            from { opacity: 0; transform: translateX(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
         }
-        @keyframes messageSlide {
-            from { opacity: 0; transform: translateY(10px); }
+        .bot-enter { animation: botSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes userSlideIn {
+            from { opacity: 0; transform: translateX(20px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        .user-enter { animation: userSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .typing-enter { animation: fadeSlideUp 0.25s ease-out forwards; }
+        #messages-container { scroll-behavior: smooth; }
+        .send-btn:hover .material-icons { animation: sendPulse 0.4s ease; }
+        @keyframes sendPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2) translateX(2px); }
+            100% { transform: scale(1); }
+        }
+        .chat-disabled { opacity: 0.5; pointer-events: none; }
+        .quick-reply-btn {
+            transition: all 0.2s;
+        }
+        .quick-reply-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(19, 236, 109, 0.2);
+        }
     </style>
+    <script>
+        const saved = localStorage.getItem('dendrovox-theme');
+        if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 </head>
 <body class="font-display bg-[#f0fdf4] dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased h-screen flex flex-col">
+
+    <!-- Offline Banner -->
+    <div id="offline-banner" class="hidden bg-red-500 text-white text-center py-1.5 text-xs font-medium">
+        <span class="material-icons text-xs align-middle mr-1">wifi_off</span> İnternet bağlantısı yok
+    </div>
 
     <!-- Akademik Bildirim Banner -->
     <div class="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 px-4 py-2 text-center" id="notice-banner">
         <p class="text-xs text-blue-700 dark:text-blue-300">
-            <span class="font-semibold">Bilgilendirme:</span> Bu konusmalar akademik arastirma amacli kayit altina alinmaktadir. Devam ederek bunu kabul etmis sayilirsiniz.
+            <span class="font-semibold">Bilgilendirme:</span> Bu konuşmalar akademik araştırma amaçlı kayıt altına alınmaktadır. Devam ederek bunu kabul etmiş sayılırsınız.
             <button class="ml-2 underline hover:no-underline" onclick="document.getElementById('notice-banner').style.display='none'">Kapat</button>
         </p>
     </div>
@@ -80,34 +114,33 @@
         </div>
         <div class="flex-1">
             <h1 class="font-bold text-sm text-slate-900 dark:text-white">{{ entity.name }}</h1>
-            <p class="text-xs text-primary flex items-center gap-1">
+            <p class="text-xs text-primary flex items-center gap-1" id="status-text">
                 <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                 {{ entity.location }}
             </p>
         </div>
-        <div class="text-right">
-            <p class="text-xs text-slate-400">{{ entity.species }}</p>
+        <div class="flex items-center gap-2">
+            <button id="tts-toggle" class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full" title="Sesli okuma">
+                <span class="material-icons text-xl">volume_up</span>
+            </button>
+            <p class="text-xs text-slate-400 hidden sm:block">{{ entity.species }}</p>
         </div>
     </header>
 
     <!-- Messages Container -->
-    <main class="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container">
-        <!-- Tarih -->
-        <div class="text-xs text-center text-gray-400 my-2">Bugun</div>
-
-        <!-- Hos geldiniz mesaji (Bot) -->
-        <div class="flex items-end gap-2 message-enter">
-            <div class="bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] border border-gray-100 dark:border-white/5">
-                <p class="text-sm text-slate-700 dark:text-slate-200" id="welcome-message">
-                    <!-- JS ile doldurulacak -->
-                </p>
-            </div>
-        </div>
+    <main class="flex-1 overflow-y-auto p-4 space-y-3" id="messages-container">
+        <div class="text-xs text-center text-gray-400 my-2">Bugün</div>
     </main>
 
-    <!-- Typing Indicator (gizli) -->
+    <!-- Quick Replies -->
+    <div id="quick-replies" class="px-4 pb-2">
+        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        </div>
+    </div>
+
+    <!-- Typing Indicator -->
     <div class="px-4 pb-2 hidden" id="typing-indicator">
-        <div class="flex items-end gap-2">
+        <div class="flex items-end gap-2 typing-enter">
             <div class="bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm border border-gray-100 dark:border-white/5">
                 <div class="typing-indicator flex items-center gap-1">
                     <span></span><span></span><span></span>
@@ -123,19 +156,19 @@
                 type="text"
                 id="message-input"
                 class="bg-transparent border-none text-sm w-full focus:ring-0 px-0 dark:text-white placeholder-gray-400"
-                placeholder="Bir seyler sor..."
+                placeholder="Bir şeyler sor..."
                 autocomplete="off"
             />
-            <button type="submit" class="text-primary hover:text-primary-dark transition-colors">
+            <button type="submit" class="send-btn text-primary hover:text-primary-dark transition-colors disabled:opacity-30">
                 <span class="material-icons text-xl">send</span>
             </button>
         </form>
+        <div class="text-center mt-1 hidden" id="limit-info">
+            <p class="text-xs text-slate-400" id="limit-text"></p>
+        </div>
     </footer>
 
     <script>
-        // ─────────────────────────────────────────────
-        // Entity Verileri (Jinja2'den)
-        // ─────────────────────────────────────────────
         const ENTITY = {
             id: "{{ entity.id }}",
             name: "{{ entity.name }}",
@@ -146,69 +179,187 @@
             description: "{{ entity.description }}",
         };
 
-        // ─────────────────────────────────────────────
-        // DOM Referansları
-        // ─────────────────────────────────────────────
         const messagesContainer = document.getElementById('messages-container');
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
         const typingIndicator = document.getElementById('typing-indicator');
-        const welcomeMessage = document.getElementById('welcome-message');
+        const limitInfo = document.getElementById('limit-info');
+        const limitText = document.getElementById('limit-text');
+        const sendBtn = chatForm.querySelector('button[type="submit"]');
+        const quickRepliesContainer = document.getElementById('quick-replies');
 
-        // ─────────────────────────────────────────────
-        // Karsilama Mesaji
-        // ─────────────────────────────────────────────
-        const welcomeMessages = {
-            'tree': `Merhaba gezgin! Ben ${ENTITY.name}. Tam ${ENTITY.age_years} yildir ${ENTITY.location} bölgesinde dimdik duruyorum. Yapraklarimda hissettigim rüzgarin hikayesini duymak ister misin?`,
-            'cat': `Miyav! Ben ${ENTITY.name}. ${ENTITY.location} benim bölgem. ${ENTITY.age_years} yildir buralarin en havalisi benim. Bana bir seyler sormak ister misin?`,
-            'flower': `Merhaba! Ben ${ENTITY.name}. ${ENTITY.location} bölgesinde en güzel kokularla sizi karsiliyorum. Rengarenk dünyami merak ediyor musunuz?`,
-        };
-        welcomeMessage.textContent = welcomeMessages[ENTITY.type] || `Merhaba! Ben ${ENTITY.name}. Seninle tanismak ne güzel!`;
-
-        // ─────────────────────────────────────────────
-        // Konusma Gecmisi
-        // ─────────────────────────────────────────────
+        const SESSION_ID = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+            ? crypto.randomUUID()
+            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        let conversationId = null;
         let conversationHistory = [];
+        let isWaitingResponse = false;
+        let ttsEnabled = false;
 
-        // ─────────────────────────────────────────────
-        // Mesaj Ekleme Fonksiyonlari
-        // ─────────────────────────────────────────────
+        // ─── TTS ───
+        const ttsToggle = document.getElementById('tts-toggle');
+        let cachedVoices = [];
+
+        function loadVoices() {
+            cachedVoices = speechSynthesis.getVoices();
+        }
+
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        }
+
+        ttsToggle.addEventListener('click', () => {
+            ttsEnabled = !ttsEnabled;
+            ttsToggle.querySelector('.material-icons').textContent = ttsEnabled ? 'volume_up' : 'volume_off';
+            ttsToggle.classList.toggle('text-primary', ttsEnabled);
+            ttsToggle.classList.toggle('text-slate-400', !ttsEnabled);
+            if (!ttsEnabled) speechSynthesis.cancel();
+        });
+
+        function speakText(text) {
+            if (!ttsEnabled || !('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+
+            if (cachedVoices.length === 0) {
+                cachedVoices = speechSynthesis.getVoices();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'tr-TR';
+            utterance.rate = 0.95;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            const trVoice = cachedVoices.find(v => v.lang.startsWith('tr'));
+            if (trVoice) utterance.voice = trVoice;
+
+            // Chrome bug: long texts get cut off; chunk restart workaround
+            let resumeTimer;
+            utterance.onstart = () => {
+                resumeTimer = setInterval(() => {
+                    if (!speechSynthesis.speaking) {
+                        clearInterval(resumeTimer);
+                    } else {
+                        speechSynthesis.pause();
+                        speechSynthesis.resume();
+                    }
+                }, 10000);
+            };
+            utterance.onend = () => clearInterval(resumeTimer);
+            utterance.onerror = () => clearInterval(resumeTimer);
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // ─── Quick Replies ───
+        const quickReplyMap = {
+            'tree': ['Kaç yaşındasın?', 'En eski anın ne?', 'Yapraklarını ne zaman dökersin?', 'Köklerini anlat'],
+            'cat': ['En sevdiğin mama ne?', 'Günün nasıl geçiyor?', 'Köpekler hakkında ne düşünüyorsun?', 'En iyi güneşlenme yerin neresi?'],
+            'flower': ['Ne zaman çiçek açarsın?', 'En sevdiğin mevsim hangisi?', 'Seni kim dikti?', 'Kokun nasıl?'],
+        };
+
+        function showQuickReplies() {
+            const replies = quickReplyMap[ENTITY.type] || ['Merhaba!', 'Bana kendini anlat', 'Burada ne kadar süredir varsın?'];
+            const container = quickRepliesContainer.querySelector('div');
+            container.innerHTML = replies.map(r =>
+                `<button type="button" class="quick-reply-btn whitespace-nowrap px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 dark:bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20">${escapeHtml(r)}</button>`
+            ).join('');
+            container.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    messageInput.value = btn.textContent;
+                    chatForm.dispatchEvent(new Event('submit'));
+                    quickRepliesContainer.classList.add('hidden');
+                });
+            });
+        }
+
+        // ─── Karşılama Mesajları ───
+        const welcomeMessages = {
+            'tree': `Merhaba gezgin! Ben ${ENTITY.name}. Tam ${ENTITY.age_years} yıldır ${ENTITY.location} bölgesinde dimdik duruyorum. Yapraklarımda hissettiğim rüzgarın hikâyesini duymak ister misin?`,
+            'cat': `Hey, sen yeni misin buralarda? Ben ${ENTITY.name}. ${ENTITY.location}'nın en havalı kedisi benim. ${ENTITY.age_years} yıldır bu bölgenin efendisiyim. Bana bir şeyler sormak ister misin?`,
+            'flower': `Merhaba! Ben ${ENTITY.name}. ${ENTITY.location}'nda en güzel kokularla sizi karşılıyorum. Rengarenk dünyamı merak ediyor musunuz?`,
+        };
+
+        // ─── Zaman Formatlama ───
+        function getTimeStr() {
+            return new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ─── Mesaj Ekleme Fonksiyonları ───
         function addUserMessage(text) {
+            const time = getTimeStr();
             const div = document.createElement('div');
-            div.className = 'flex items-end gap-2 justify-end message-enter';
+            div.className = 'flex items-end gap-2 justify-end';
+            div.style.opacity = '0';
             div.innerHTML = `
-                <div class="bg-primary p-3 rounded-2xl rounded-br-none shadow-md max-w-[85%]">
-                    <p class="text-sm text-background-dark font-medium">${escapeHtml(text)}</p>
+                <div class="max-w-[80%]">
+                    <div class="bg-primary p-3 rounded-2xl rounded-br-none shadow-md">
+                        <p class="text-sm text-background-dark font-medium">${escapeHtml(text)}</p>
+                    </div>
+                    <p class="text-[10px] text-slate-400 text-right mt-1 mr-1">${time}</p>
                 </div>
             `;
             messagesContainer.appendChild(div);
+            requestAnimationFrame(() => { div.className += ' user-enter'; });
             scrollToBottom();
         }
 
-        function addBotMessage(text) {
+        function addBotMessage(text, typewrite = false) {
+            const time = getTimeStr();
             const div = document.createElement('div');
-            div.className = 'flex items-end gap-2 message-enter';
-            div.innerHTML = `
-                <div class="bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm max-w-[85%] border border-gray-100 dark:border-white/5">
-                    <p class="text-sm text-slate-700 dark:text-slate-200">${escapeHtml(text)}</p>
-                </div>
-            `;
+            div.className = 'flex items-start gap-2';
+            div.style.opacity = '0';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'max-w-[80%]';
+
+            const textP = document.createElement('p');
+            textP.className = 'text-sm text-slate-700 dark:text-slate-200 leading-relaxed';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm border border-gray-100 dark:border-white/5';
+            bubble.appendChild(textP);
+
+            const timeEl = document.createElement('p');
+            timeEl.className = 'text-[10px] text-slate-400 mt-1 ml-1';
+            timeEl.textContent = time;
+
+            wrapper.appendChild(bubble);
+            wrapper.appendChild(timeEl);
+            div.appendChild(wrapper);
+
             messagesContainer.appendChild(div);
+            requestAnimationFrame(() => { div.className += ' bot-enter'; });
+
+            if (typewrite && text.length > 0) {
+                typewriteText(textP, text, 0, () => speakText(text));
+            } else {
+                textP.textContent = text;
+                speakText(text);
+            }
             scrollToBottom();
         }
 
-        function showTyping() {
-            typingIndicator.classList.remove('hidden');
-            scrollToBottom();
+        function typewriteText(element, text, index, onComplete) {
+            if (index < text.length) {
+                const chunkSize = Math.floor(Math.random() * 3) + 1;
+                const chunk = text.slice(index, index + chunkSize);
+                element.textContent += chunk;
+                scrollToBottom();
+                const delay = Math.floor(Math.random() * 20) + 10;
+                setTimeout(() => typewriteText(element, text, index + chunkSize, onComplete), delay);
+            } else if (onComplete) {
+                onComplete();
+            }
         }
 
-        function hideTyping() {
-            typingIndicator.classList.add('hidden');
-        }
-
-        function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
+        function showTyping() { typingIndicator.classList.remove('hidden'); scrollToBottom(); }
+        function hideTyping() { typingIndicator.classList.add('hidden'); }
+        function scrollToBottom() { messagesContainer.scrollTop = messagesContainer.scrollHeight; }
 
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -216,70 +367,104 @@
             return div.innerHTML;
         }
 
-            // ─────────────────────────────────────────────
-            // Chat API Iletisimi
-            // ─────────────────────────────────────────────
-            async function sendMessage(message) {
-                try {
-                    showTyping();
+        function updateLimitCounter() {
+            const remaining = 25 - conversationHistory.length;
+            if (remaining <= 10 && remaining > 0) {
+                limitInfo.classList.remove('hidden');
+                limitText.textContent = `${remaining} mesaj hakkınız kaldı`;
+            }
+        }
 
-                    const response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            entity_id: ENTITY.id,
-                            message: message,
-                            conversation_history: conversationHistory
-                        })
-                    });
+        // ─── Chat API ───
+        async function sendMessage(message) {
+            if (isWaitingResponse) return;
+            isWaitingResponse = true;
+            sendBtn.disabled = true;
 
-                    const data = await response.json();
-                    hideTyping();
+            try {
+                showTyping();
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        entity_id: ENTITY.id,
+                        message: message,
+                        conversation_history: conversationHistory,
+                        session_id: SESSION_ID,
+                        conversation_id: conversationId
+                    })
+                });
 
-                    if (data.reply) {
-                        addBotMessage(data.reply);
-                        conversationHistory.push(
-                            { role: 'user', content: message },
-                            { role: 'assistant', content: data.reply }
-                        );
-                        
-                        // Limit kontrolü
-                        if (data.limit_reached) {
-                            endConversation();
-                        }
-                        
-                    } else {
-                        addBotMessage('Hmm, bir sorun oldu. Tekrar dener misin?');
-                    }
-                } catch (error) {
-                    hideTyping();
-                    addBotMessage('Baglanti hatasi olustu. Lütfen tekrar deneyin.');
-                    console.error('Chat API error:', error);
+                const data = await response.json();
+                hideTyping();
+
+                if (data.reply) {
+                    if (data.conversation_id) conversationId = data.conversation_id;
+                    addBotMessage(data.reply, true);
+                    conversationHistory.push(
+                        { role: 'user', content: message },
+                        { role: 'assistant', content: data.reply }
+                    );
+                    updateLimitCounter();
+                    if (data.limit_reached) endConversation();
+                } else {
+                    addBotMessage('Hmm, bir sorun oldu. Tekrar dener misin?');
                 }
+            } catch (error) {
+                hideTyping();
+                addBotMessage('Bağlantı hatası oluştu. Lütfen tekrar deneyin.');
+                console.error('Chat API error:', error);
+            } finally {
+                isWaitingResponse = false;
+                sendBtn.disabled = false;
             }
-            
-            function endConversation() {
-                messageInput.disabled = true;
-                messageInput.placeholder = "Sohbet sonlandı.";
-                document.querySelector('button[type="submit"]').disabled = true;
-                addBotMessage("🌿 Bu sohbetin mesaj limitine ulaşıldı. Başka bir karakterle konuşmak için Keşfet sayfasına dönebilirsin.");
-            }
+        }
 
-        // ─────────────────────────────────────────────
-        // Form Submit
-        // ─────────────────────────────────────────────
+        function endConversation() {
+            messageInput.disabled = true;
+            messageInput.placeholder = "Sohbet sonlandı.";
+            sendBtn.disabled = true;
+            chatForm.classList.add('chat-disabled');
+            quickRepliesContainer.classList.add('hidden');
+            limitInfo.classList.remove('hidden');
+            limitText.textContent = "Mesaj limiti doldu";
+            setTimeout(() => {
+                addBotMessage("Bu sohbetin mesaj limitine ulaşıldı. Başka bir karakterle konuşmak için Keşfet sayfasına dönebilirsin.", true);
+            }, 500);
+        }
+
+        // ─── Form Submit ───
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const message = messageInput.value.trim();
-            if (!message) return;
-
+            if (!message || isWaitingResponse) return;
             addUserMessage(message);
             messageInput.value = '';
+            quickRepliesContainer.classList.add('hidden');
             sendMessage(message);
         });
 
-        // Sayfa yüklendiginde scroll
-        scrollToBottom();
+        // ─── Init ───
+        const welcomeText = welcomeMessages[ENTITY.type] || `Merhaba! Ben ${ENTITY.name}. Seninle tanışmak ne güzel!`;
+        setTimeout(() => {
+            showTyping();
+            const typingDelay = 800 + Math.random() * 600;
+            setTimeout(() => {
+                hideTyping();
+                addBotMessage(welcomeText, true);
+                showQuickReplies();
+            }, typingDelay);
+        }, 400);
+
+        // Offline
+        const offlineBanner = document.getElementById('offline-banner');
+        window.addEventListener('offline', () => offlineBanner.classList.remove('hidden'));
+        window.addEventListener('online', () => offlineBanner.classList.add('hidden'));
+
+        // PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+        }
     </script>
 </body>
 </html>

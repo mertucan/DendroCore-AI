@@ -33,6 +33,7 @@ Thumbs.db
 *.db
 *.sqlite3
 instance/
+logs/
 
 # ─────────────────────────────────────────────
 # Ortam Değişkenleri (GİZLİ BİLGİLER)

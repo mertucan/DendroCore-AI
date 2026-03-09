@@ -4,6 +4,17 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{% block title %}DendroVox - Doğanın Sesi{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}DendroVox - Parklardaki ağaçlar, bitkiler ve doğa varlıklarıyla AI destekli sohbet platformu. QR kod ile erişim, 1. şahıs anlatım.{% endblock %}"/>
+    <meta name="keywords" content="DendroVox, doğa, ağaç, yapay zeka, chatbot, park, İstanbul, ekoloji, eğitim"/>
+    <meta name="author" content="DendroVox Project"/>
+    <meta name="theme-color" content="#13ec6d"/>
+    <meta property="og:title" content="DendroVox - Doğanın Sesi"/>
+    <meta property="og:description" content="Parklardaki ağaçlar ve doğa varlıklarıyla AI destekli sohbet deneyimi."/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:locale" content="tr_TR"/>
+    <link rel="canonical" href="{{ request.url }}"/>
+    <link rel="manifest" href="/static/manifest.json"/>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>"/>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -31,6 +42,7 @@
             },
         }
     </script>
+    {% block head %}{% endblock %}
     <style>
         .glass-panel {
             background: rgba(255, 255, 255, 0.05);
@@ -58,9 +70,27 @@
             padding-top: 1.5rem !important;
             padding-bottom: 1.5rem !important;
         }
+        .skeleton {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s infinite;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg, #1a2c24 25%, #223830 50%, #1a2c24 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased selection:bg-primary selection:text-black flex flex-col min-h-screen">
+    <!-- Offline Notification -->
+    <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 z-[100] bg-red-500 text-white text-center py-2 text-sm font-medium">
+        <span class="material-icons text-sm align-middle mr-1">wifi_off</span> İnternet bağlantınız kesildi
+    </div>
+
     <!-- Navigation -->
     <nav id="main-nav" class="fixed w-full z-50 transition-all duration-500 ease-in-out py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,15 +108,33 @@
                         <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/story">Hikaye</a>
                         <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/how-it-works">Nasıl Çalışır?</a>
                         <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/features">Özellikler</a>
+                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/faq">SSS</a>
                     </div>
                 </div>
-                <div>
-                    <a class="bg-primary hover:bg-primary-dark text-background-dark font-bold px-6 py-2.5 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(19,236,109,0.2)] hover:shadow-[0_0_25px_rgba(19,236,109,0.4)] hover:-translate-y-0.5 flex items-center gap-2" href="/explore">
+                <div class="flex items-center gap-3">
+                    <!-- Dark Mode Toggle -->
+                    <button id="dark-toggle" class="text-slate-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Tema değiştir">
+                        <span class="material-icons text-xl" id="dark-icon">dark_mode</span>
+                    </button>
+                    <!-- CTA -->
+                    <a class="hidden sm:flex bg-primary hover:bg-primary-dark text-background-dark font-bold px-6 py-2.5 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(19,236,109,0.2)] hover:shadow-[0_0_25px_rgba(19,236,109,0.4)] hover:-translate-y-0.5 items-center gap-2" href="/explore">
                         <span>Keşfet</span>
                         <span class="material-icons text-sm">arrow_forward</span>
                     </a>
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2" aria-label="Menü">
+                        <span class="material-icons text-2xl">menu</span>
+                    </button>
                 </div>
             </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4 mx-4 glass-panel rounded-2xl p-4 space-y-2">
+            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/story">Hikaye</a>
+            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/how-it-works">Nasıl Çalışır?</a>
+            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/features">Özellikler</a>
+            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/faq">SSS</a>
+            <a class="block bg-primary hover:bg-primary-dark text-background-dark font-bold px-4 py-3 rounded-xl text-sm text-center transition-colors mt-2" href="/explore">Keşfet</a>
         </div>
     </nav>
 
@@ -103,8 +151,12 @@
                     <span class="material-icons text-primary text-3xl">forest</span>
                     <span class="font-bold text-2xl text-slate-900 dark:text-white">DendroVox</span>
                 </div>
-                <div class="flex gap-6">
-                    <!-- Social Icons (Placeholder) -->
+                <div class="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
+                    <a href="/story" class="hover:text-primary transition-colors">Hikaye</a>
+                    <a href="/how-it-works" class="hover:text-primary transition-colors">Nasıl Çalışır?</a>
+                    <a href="/features" class="hover:text-primary transition-colors">Özellikler</a>
+                    <a href="/faq" class="hover:text-primary transition-colors">SSS</a>
+                    <a href="/explore" class="hover:text-primary transition-colors">Keşfet</a>
                 </div>
             </div>
             <div class="border-t border-slate-200 dark:border-white/10 pt-8">
@@ -125,31 +177,62 @@
         document.addEventListener('DOMContentLoaded', () => {
             const nav = document.getElementById('main-nav');
             const isHeroPage = document.querySelector('.hero-section');
-            
+
             function updateNav() {
                 if (window.scrollY > 20) {
-                    // Scroll yapıldığında
                     nav.classList.add('nav-scrolled');
                     nav.classList.remove('nav-transparent', 'nav-default');
                 } else {
-                    // En tepedeyken
                     nav.classList.remove('nav-scrolled');
-                    
                     if (isHeroPage) {
-                        // Hero sayfasında şeffaf
                         nav.classList.add('nav-transparent');
                         nav.classList.remove('nav-default');
                     } else {
-                        // Diğer sayfalarda hafif koyu
                         nav.classList.add('nav-default');
                         nav.classList.remove('nav-transparent');
                     }
                 }
             }
-
             window.addEventListener('scroll', updateNav);
-            updateNav(); // İlk yüklemede çalıştır
+            updateNav();
+
+            // Dark Mode
+            const darkToggle = document.getElementById('dark-toggle');
+            const darkIcon = document.getElementById('dark-icon');
+            const html = document.documentElement;
+
+            function setDark(dark) {
+                html.classList.toggle('dark', dark);
+                darkIcon.textContent = dark ? 'light_mode' : 'dark_mode';
+                localStorage.setItem('dendrovox-theme', dark ? 'dark' : 'light');
+            }
+
+            const saved = localStorage.getItem('dendrovox-theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setDark(true);
+            }
+
+            darkToggle.addEventListener('click', () => setDark(!html.classList.contains('dark')));
+
+            // Mobile Menu
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuBtn.querySelector('.material-icons').textContent =
+                    mobileMenu.classList.contains('hidden') ? 'menu' : 'close';
+            });
+
+            // Offline Detection
+            const offlineBanner = document.getElementById('offline-banner');
+            window.addEventListener('offline', () => offlineBanner.classList.remove('hidden'));
+            window.addEventListener('online', () => offlineBanner.classList.add('hidden'));
         });
+
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}SSS - DendroVox{% endblock %}
+{% block meta_description %}DendroVox Sıkça Sorulan Sorular - Uygulama hakkında merak edilenler{% endblock %}
+
+{% block head %}
+<style>
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, padding 0.4s ease;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    .faq-answer.open {
+        max-height: 600px;
+        padding-top: 0;
+        padding-bottom: 1rem;
+    }
+    .faq-chevron {
+        transition: transform 0.3s ease;
+    }
+    .faq-chevron.open {
+        transform: rotate(180deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="pt-32 pb-20 min-h-screen">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-2xl mx-auto mb-14">
+            <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-4 uppercase">SSS</span>
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">Sıkça Sorulan Sorular</h1>
+            <p class="text-slate-600 dark:text-slate-300">DendroVox hakkında merak edilenlerin yanıtları</p>
+        </div>
+        <div class="max-w-3xl mx-auto space-y-3" id="faq-list">
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">DendroVox nedir?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">DendroVox, parklardaki ağaçlar, bitkiler ve doğa varlıklarıyla yapay zeka destekli sohbet etmenizi sağlayan deneysel bir platformdur. Her varlığın kendine özgü bir kişiliği ve hikayesi vardır.</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">Uygulama indirmem gerekiyor mu?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">Hayır, DendroVox tamamen web tabanlıdır. Herhangi bir uygulama indirmenize veya üye olmanıza gerek yok. Tarayıcınızdan direkt erişebilirsiniz.</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">Konuşmalar kaydediliyor mu?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">Evet, konuşmalar akademik araştırma amacıyla anonim olarak kaydedilmektedir. Kişisel bilgi toplanmaz ve veriler yalnızca araştırma için kullanılır.</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">Sohbet limiti var mı?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">Her sohbet oturumunda 25 mesaj hakkınız bulunmaktadır. Limit dolduğunda yeni bir sohbet başlatabilirsiniz.</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">Ağaçlar gerçekten konuşuyor mu?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">Tabii ki hayır! DendroVox, yapay zeka kullanarak ağaçlara ve doğa varlıklarına kurgusal bir ses verir. Bilimsel bilgilerle kurgusal anlatıyı birleştirerek eğitici ve eğlenceli bir deneyim sunar.</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">Verilerim güvende mi?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">Evet, DendroVox hiçbir kişisel bilgi toplamaz. Sohbetler anonim olarak saklanır ve yalnızca akademik amaçlarla kullanılır. Hesap oluşturmanıza gerek yoktur.</p>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-[#1a2c24] rounded-xl border border-slate-100 dark:border-white/5 overflow-hidden">
+                <button class="faq-btn w-full text-left px-6 py-4 flex items-center justify-between" onclick="toggleFaq(this)">
+                    <span class="font-semibold text-slate-900 dark:text-white">Hangi cihazlarda kullanabilirim?</span>
+                    <span class="material-icons faq-chevron text-primary">expand_more</span>
+                </button>
+                <div class="faq-answer px-6">
+                    <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">DendroVox, modern web tarayıcısı olan tüm cihazlarda (telefon, tablet, bilgisayar) sorunsuz çalışır. Ayrıca PWA desteği sayesinde ana ekranınıza ekleyip uygulama gibi kullanabilirsiniz.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    function toggleFaq(btn) {
+        const answer = btn.nextElementSibling;
+        const chevron = btn.querySelector('.faq-chevron');
+        const isOpen = answer.classList.contains('open');
+
+        document.querySelectorAll('.faq-answer.open').forEach(el => {
+            el.classList.remove('open');
+            el.previousElementSibling.querySelector('.faq-chevron').classList.remove('open');
+        });
+
+        if (!isOpen) {
+            answer.classList.add('open');
+            chevron.classList.add('open');
+        }
+    }
+</script>
+{% endblock %}
