@@ -1,0 +1,338 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ 'Yeni Karakter' if is_new else entity.name }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<style>
+    #pick-map { height: 320px; border-radius: 1rem; z-index: 1; }
+    .choice input { position: absolute; opacity: 0; pointer-events: none; }
+    .choice > span { border: 2px solid #d5e1da; transition: border-color .15s, background-color .15s; }
+    .choice input:checked + span { border-color: #13ec6d; background: #f0fdf4; box-shadow: 0 0 0 4px rgba(19,236,109,.15); }
+    .choice input:focus-visible + span { outline: 3px solid #0fb854; outline-offset: 2px; }
+    .step { width: 2.25rem; height: 2.25rem; border-radius: 999px; background: #13ec6d; color: #0b1a12; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+</style>
+{% endblock %}
+
+{% macro error_for(name) %}
+{% if errors.get(name) %}<p class="error-text" id="{{ name }}-error"><span class="material-icons text-lg" aria-hidden="true">error</span>{{ errors[name] }}</p>{% endif %}
+{% endmacro %}
+{% macro invalid(name) %}{{ ('class="field has-error" aria-invalid="true" aria-describedby="' ~ name ~ '-error"')|safe if errors.get(name) else 'class="field"'|safe }}{% endmacro %}
+
+{% block content %}
+<a href="{{ url_for('admin.entities') }}" class="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-semibold mb-4"><span class="material-icons" aria-hidden="true">arrow_back</span>Karakterlere dön</a>
+<h1 class="text-3xl font-extrabold text-slate-900">{{ 'Yeni karakter ekle' if is_new else '“' ~ entity.name ~ '” karakterini düzenle' }}</h1>
+<p class="text-slate-600 mt-1 mb-6">Adımları sırayla doldurun. <span class="text-slate-500">(İsteğe bağlı)</span> yazan alanları boş bırakabilirsiniz.</p>
+
+<form method="post" enctype="multipart/form-data" id="entity-form" class="space-y-6" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <!-- 1. Tür -->
+    <section class="card p-6">
+        <h2 class="text-xl font-bold flex items-center gap-3 mb-1"><span class="step">1</span>Bu karakter ne?</h2>
+        <p class="help !mt-0 mb-4 ml-12">Birini seçin.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" role="radiogroup" aria-label="Karakter türü">
+            {% for key, (prefix, label, icon) in entity_types.items() %}
+            <label class="choice relative cursor-pointer">
+                <input type="radio" name="type" value="{{ key }}" {{ 'checked' if entity.type == key }} {{ 'disabled' if not is_new }}/>
+                <span class="flex flex-col items-center gap-2 rounded-2xl p-4 text-center font-bold">
+                    <span class="material-icons text-4xl text-[#0a8f42]" aria-hidden="true">{{ icon }}</span>{{ label }}
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+        {% if not is_new %}<input type="hidden" name="type" value="{{ entity.type }}"/><p class="help">Kayıtlı bir karakterin türü değiştirilemez.</p>{% endif %}
+        {{ error_for('type') }}
+    </section>
+
+    <!-- 2. Adı -->
+    <section class="card p-6 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">2</span>Adı ve özellikleri</h2>
+        <div>
+            <label for="name" class="label">Karakterin adı</label>
+            <input id="name" name="name" value="{{ entity.name }}" maxlength="60" {{ invalid('name') }} placeholder="Örneğin: Ulu Çınar"/>
+            {{ error_for('name') }}
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <label for="species" class="label">Cinsi <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+                <input id="species" name="species" value="{{ entity.species or '' }}" maxlength="80" class="field" placeholder="Örneğin: Çınar ağacı"/>
+                <p class="help">Bilimsel adını biliyorsanız onu da yazabilirsiniz.</p>
+            </div>
+            <div>
+                <label for="age_years" class="label">Yaşı <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+                <input id="age_years" name="age_years" value="{{ entity.age_years if entity.age_years is not none else '' }}" inputmode="numeric" maxlength="4" {{ invalid('age_years') }} placeholder="Örneğin: 120"/>
+                <p class="help">Sadece rakam yazın.</p>
+                {{ error_for('age_years') }}
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Konum -->
+    <section class="card p-6 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">3</span>Nerede?</h2>
+        <div>
+            <label for="location" class="label">Bulunduğu yer</label>
+            <input id="location" name="location" value="{{ entity.location or '' }}" maxlength="120" {{ invalid('location') }} placeholder="Örneğin: Yıldız Parkı, İstanbul"/>
+            {{ error_for('location') }}
+        </div>
+        <div>
+            <p class="label">Haritada yeri <span class="font-normal text-slate-500">(isteğe bağlı ama önerilir)</span></p>
+            <p class="help !mt-0 mb-3">Haritada karakterin durduğu yere <strong>tıklayın</strong>. Yeşil işaret o noktaya konur. Bu sayede karakter havayı ve mevsimi bilir ve ana sayfadaki haritada görünür.</p>
+            <div id="pick-map" role="application" aria-label="Konum seçme haritası"></div>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+                <span id="pin-status" class="text-[15px] font-semibold text-slate-600"></span>
+                <button type="button" id="pin-clear" class="btn btn-light !min-h-0 !py-2 hidden"><span class="material-icons text-xl" aria-hidden="true">location_off</span>İşareti kaldır</button>
+            </div>
+            <input type="hidden" name="latitude" id="latitude" value="{{ entity.latitude if entity.latitude is not none else '' }}"/>
+            <input type="hidden" name="longitude" id="longitude" value="{{ entity.longitude if entity.longitude is not none else '' }}"/>
+            {{ error_for('location_pin') }}
+        </div>
+    </section>
+
+    <!-- 4. Tanıtım -->
+    <section class="card p-6 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">4</span>Ziyaretçilere kısa tanıtım</h2>
+        <div>
+            <label for="description" class="label">Tanıtım yazısı</label>
+            <textarea id="description" name="description" rows="3" maxlength="400" {{ invalid('description') }} placeholder="Örneğin: Ben bu parkın en yaşlısıyım. Tam 120 yıldır buradayım.">{{ entity.description or '' }}</textarea>
+            <p class="help">Keşfet sayfasında karakterin kartında görünür. Karakterin ağzından yazabilirsiniz.</p>
+            {{ error_for('description') }}
+        </div>
+    </section>
+
+    <!-- 5. Kişilik -->
+    <section class="card p-6 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">5</span>Kişiliği ve hikâyesi</h2>
+        <div class="tip text-[15px]">Karakter sohbet ederken burada yazdıklarınızı kullanır. Ne kadar çok ayrıntı yazarsanız o kadar canlı konuşur.</div>
+        <div>
+            <label for="personality" class="label">Nasıl biri?</label>
+            <textarea id="personality" name="personality" rows="2" maxlength="600" {{ invalid('personality') }} placeholder="Örneğin: Bilge, yaşlı ama dinç, biraz nostaljik, insanları seven.">{{ entity.personality or '' }}</textarea>
+            {{ error_for('personality') }}
+        </div>
+        <div>
+            <label for="backstory" class="label">Bildikleri ve anıları <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+            <textarea id="backstory" name="backstory" rows="6" maxlength="3000" class="field" placeholder="Her satıra bir bilgi yazın. Örneğin:&#10;Osmanlı'nın son dönemlerini gördü.&#10;Sonbaharda yapraklarını dökmek onun için dinlenmek demek.&#10;Köpeklerden pek hoşlanmaz.">{{ entity.backstory or '' }}</textarea>
+            <p class="help">Her satıra bir bilgi yazın. Karakter bunları kendi anıları gibi anlatır.</p>
+        </div>
+    </section>
+
+    <!-- 6. Doğru bilgiler -->
+    <section class="card p-6 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">6</span>Doğru bilgiler <span class="font-normal text-slate-500 text-base">(isteğe bağlı ama önerilir)</span></h2>
+        <div class="tip text-[15px]">Buraya <strong>kesin doğru</strong> bilgileri yazın (ör. türün özellikleri, dikildiği yıl). Ziyaretçiler bunları sohbet ekranındaki <strong>Bilgi kartı</strong> ve <strong>Biliyor muydun?</strong> kutusunda görür. Karakter de rakam söylerken bunlara dayanır, uydurmaz.</div>
+        <div>
+            <label for="facts" class="label">Kesin bilgiler</label>
+            <textarea id="facts" name="facts" rows="5" {{ invalid('facts') }} placeholder="Her satıra bir bilgi. Örneğin:&#10;Çınar ağaçları yüzlerce yıl yaşayabilir.&#10;Bu ağaç 1905 yılında dikildi.">{{ entity.facts|join('
+') }}</textarea>
+            <p class="help">Her satıra bir bilgi yazın. En fazla 8 bilgi. Emin olmadığınız bilgileri yazmayın.</p>
+            {{ error_for('facts') }}
+        </div>
+    </section>
+
+    <!-- 7. Karşılama -->
+    <section class="card p-6 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">7</span>Karşılama ve önerilen sorular</h2>
+        <div>
+            <label for="welcome_message" class="label">İlk söylediği cümle <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+            <textarea id="welcome_message" name="welcome_message" rows="2" maxlength="400" class="field" placeholder="Boş bırakırsanız karakterin türüne uygun hazır bir karşılama kullanılır.">{{ entity.welcome_message or '' }}</textarea>
+        </div>
+        <div>
+            <label for="quick_replies" class="label">Önerilen sorular <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+            <textarea id="quick_replies" name="quick_replies" rows="4" {{ invalid('quick_replies') }} placeholder="Her satıra bir soru. Örneğin:&#10;Kaç yaşındasın?&#10;En eski anın ne?">{{ entity.quick_replies|join('\n') }}</textarea>
+            <p class="help">Ziyaretçiler bu sorulara tek dokunuşla sorabilir. En fazla 6 soru.</p>
+            {{ error_for('quick_replies') }}
+        </div>
+    </section>
+
+    <!-- 8. Ses -->
+    <section class="card p-6">
+        <h2 class="text-xl font-bold flex items-center gap-3 mb-1"><span class="step">8</span>Sesi</h2>
+        <p class="help !mt-0 mb-4 ml-12">Ziyaretçiler "Dinle" düğmesine bastığında karakter bu sesle konuşur. <strong>Dinle</strong> düğmesiyle deneyebilirsiniz.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for key, profile in voice_profiles.items() %}
+            <div class="relative">
+                <label class="choice relative cursor-pointer block">
+                    <input type="radio" name="voice_profile" value="{{ key }}" {{ 'checked' if entity.voice_profile == key }}/>
+                    <span class="flex items-center gap-3 rounded-2xl p-4 pr-28">
+                        <span class="material-icons text-3xl text-[#0a8f42]" aria-hidden="true">record_voice_over</span>
+                        <span><span class="block font-bold">{{ profile.label }}</span><span class="block text-[15px] text-slate-500">{{ profile.hint }}</span></span>
+                    </span>
+                </label>
+                <button type="button" class="voice-preview btn btn-light !min-h-0 !py-2 !px-3 absolute right-3 top-1/2 -translate-y-1/2" data-voice="{{ key }}" aria-label="{{ profile.label }} sesini dinle">
+                    <span class="material-icons text-xl" aria-hidden="true">play_arrow</span><span class="label-text">Dinle</span>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- 9. Fotoğraf -->
+    <section class="card p-6 space-y-4">
+        <h2 class="text-xl font-bold flex items-center gap-3"><span class="step">9</span>Fotoğrafı <span class="font-normal text-slate-500 text-base">(isteğe bağlı)</span></h2>
+        <div class="flex flex-col sm:flex-row gap-5 items-start">
+            <div class="w-full sm:w-56 h-40 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-200 to-green-600 flex items-center justify-center shrink-0">
+                <img id="photo-preview" src="{{ entity.image_url or '' }}" alt="Fotoğraf önizlemesi" class="w-full h-full object-cover {{ '' if entity.image_url else 'hidden' }}"/>
+                <span id="photo-empty" class="material-icons text-white/80 text-6xl {{ 'hidden' if entity.image_url }}" aria-hidden="true">image</span>
+            </div>
+            <div class="space-y-3">
+                <label for="photo" class="btn btn-light cursor-pointer"><span class="material-icons" aria-hidden="true">add_photo_alternate</span>{{ 'Fotoğrafı değiştir' if entity.image_url else 'Fotoğraf seç' }}</label>
+                <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only"/>
+                <p class="help !mt-0">Telefonunuzla çektiğiniz bir fotoğrafı seçebilirsiniz. Fotoğraftaki konum bilgisi otomatik silinir.</p>
+                {% if entity.image_url %}
+                <label class="flex items-center gap-2 text-[15px] cursor-pointer"><input type="checkbox" name="remove_photo" class="w-5 h-5 rounded"/> Fotoğrafı kaldır</label>
+                {% endif %}
+                {{ error_for('photo') }}
+            </div>
+        </div>
+    </section>
+
+    <!-- İngilizce -->
+    <details class="card p-6 group" {{ 'open' if errors.get('quick_replies_en') or errors.get('facts_en') }}>
+        <summary class="text-xl font-bold cursor-pointer flex items-center gap-3"><span class="material-icons text-[#0a8f42]" aria-hidden="true">translate</span>İngilizce metinler <span class="font-normal text-slate-500 text-base">(isteğe bağlı)</span></summary>
+        <p class="help mb-4">İngilizce konuşan ziyaretçiler için. Boş bırakırsanız karakter yine İngilizce konuşur, sadece bu metinler Türkçe görünür.</p>
+        <div class="space-y-5">
+            <div>
+                <label for="description_en" class="label">Tanıtım yazısı (İngilizce)</label>
+                <textarea id="description_en" name="description_en" rows="3" maxlength="400" class="field">{{ entity.description_en or '' }}</textarea>
+            </div>
+            <div>
+                <label for="welcome_message_en" class="label">İlk söylediği cümle (İngilizce)</label>
+                <textarea id="welcome_message_en" name="welcome_message_en" rows="2" maxlength="400" class="field">{{ entity.welcome_message_en or '' }}</textarea>
+            </div>
+            <div>
+                <label for="facts_en" class="label">Kesin bilgiler (İngilizce, her satıra bir bilgi)</label>
+                <textarea id="facts_en" name="facts_en" rows="4" {{ invalid('facts_en') }}>{{ entity.facts_en|join('
+') }}</textarea>
+                {{ error_for('facts_en') }}
+            </div>
+            <div>
+                <label for="quick_replies_en" class="label">Önerilen sorular (İngilizce, her satıra bir soru)</label>
+                <textarea id="quick_replies_en" name="quick_replies_en" rows="4" {{ invalid('quick_replies_en') }}>{{ entity.quick_replies_en|join('\n') }}</textarea>
+                {{ error_for('quick_replies_en') }}
+            </div>
+        </div>
+    </details>
+
+    <!-- Görünürlük -->
+    <section class="card p-6">
+        <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" name="is_active" class="w-6 h-6 mt-0.5 rounded text-[#0fb854] focus:ring-[#13ec6d]" {{ 'checked' if entity.is_active }}/>
+            <span><span class="block font-bold text-lg">Ziyaretçilere görünsün</span><span class="block help !mt-0">İşareti kaldırırsanız karakter kaydedilir ama sitede görünmez.</span></span>
+        </label>
+    </section>
+
+    <!-- Kaydet çubuğu -->
+    <div class="sticky bottom-20 md:bottom-4 z-20">
+        <div class="card p-3 flex flex-col-reverse sm:flex-row justify-end gap-3 shadow-lg">
+            <a href="{{ url_for('admin.entities') }}" class="btn btn-light" id="cancel-btn">Vazgeç</a>
+            <button class="btn btn-primary text-lg sm:min-w-[220px]"><span class="material-icons" aria-hidden="true">save</span>Kaydet</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const CSRF = {{ csrf_token()|tojson }};
+    const form = document.getElementById('entity-form');
+
+    // Kaydedilmemiş değişiklik uyarısı
+    let dirty = false;
+    form.addEventListener('input', () => { dirty = true; });
+    form.addEventListener('change', () => { dirty = true; });
+    form.addEventListener('submit', () => { dirty = false; });
+    window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+
+    // İlk hatalı alana odaklan
+    const firstError = form.querySelector('[aria-invalid="true"]');
+    if (firstError) firstError.focus();
+
+    // Harita ile konum seçme
+    const latInput = document.getElementById('latitude');
+    const lngInput = document.getElementById('longitude');
+    const status = document.getElementById('pin-status');
+    const clearBtn = document.getElementById('pin-clear');
+    const start = latInput.value && lngInput.value ? [parseFloat(latInput.value), parseFloat(lngInput.value)] : null;
+    const map = L.map('pick-map').setView(start || [41.03, 29.0], start ? 16 : 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    const pinIcon = L.divIcon({ html: '<div style="background:#13ec6d;width:30px;height:30px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>', iconSize: [30, 30], className: '' });
+    let marker = null;
+    function setPin(latlng, announce) {
+        if (!marker) marker = L.marker(latlng, { icon: pinIcon }).addTo(map);
+        marker.setLatLng(latlng);
+        latInput.value = latlng.lat.toFixed(6);
+        lngInput.value = latlng.lng.toFixed(6);
+        status.innerHTML = '<span class="text-[#0a8f42]">✓ Konum işaretlendi.</span>';
+        clearBtn.classList.remove('hidden');
+        if (announce) dirty = true;
+    }
+    if (start) setPin(L.latLng(start[0], start[1]), false);
+    else status.textContent = 'Henüz konum işaretlenmedi.';
+    map.on('click', e => setPin(e.latlng, true));
+    clearBtn.addEventListener('click', () => {
+        if (marker) { map.removeLayer(marker); marker = null; }
+        latInput.value = lngInput.value = '';
+        status.textContent = 'Henüz konum işaretlenmedi.';
+        clearBtn.classList.add('hidden');
+        dirty = true;
+    });
+
+    // Fotoğraf önizleme
+    document.getElementById('photo').addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const preview = document.getElementById('photo-preview');
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+        document.getElementById('photo-empty').classList.add('hidden');
+    });
+
+    // Ses önizleme
+    let audio = null;
+    document.querySelectorAll('.voice-preview').forEach(button => {
+        const text = button.querySelector('.label-text');
+        const iconEl = button.querySelector('.material-icons');
+        const reset = () => { text.textContent = 'Dinle'; iconEl.textContent = 'play_arrow'; button.disabled = false; };
+        button.addEventListener('click', async () => {
+            if (audio) { audio.pause(); audio = null; }
+            speechSynthesis && speechSynthesis.cancel();
+            document.querySelectorAll('.voice-preview').forEach(b => { b.querySelector('.label-text').textContent = 'Dinle'; b.querySelector('.material-icons').textContent = 'play_arrow'; });
+            text.textContent = 'Hazırlanıyor…';
+            iconEl.textContent = 'hourglass_top';
+            button.disabled = true;
+            try {
+                const response = await fetch('{{ url_for('admin.voice_preview') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF },
+                    body: JSON.stringify({ voice_profile: button.dataset.voice, name: document.getElementById('name').value }),
+                });
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    if (data.text && 'speechSynthesis' in window) {
+                        const u = new SpeechSynthesisUtterance(data.text);
+                        u.lang = 'tr-TR';
+                        Object.assign(u, data.browser || {});
+                        text.textContent = 'Çalıyor (yedek ses)';
+                        u.onend = reset;
+                        speechSynthesis.speak(u);
+                        button.disabled = false;
+                        return;
+                    }
+                    throw new Error('ses');
+                }
+                audio = new Audio(URL.createObjectURL(await response.blob()));
+                audio.onended = reset;
+                text.textContent = 'Çalıyor…';
+                iconEl.textContent = 'volume_up';
+                button.disabled = false;
+                await audio.play();
+            } catch (error) {
+                reset();
+                text.textContent = 'Ses alınamadı';
+                setTimeout(reset, 2500);
+            }
+        });
+    });
+</script>
+{% endblock %}

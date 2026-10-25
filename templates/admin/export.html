@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% block title %}Verileri İndir{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold text-slate-900">Verileri indir</h1>
+<p class="text-slate-600 mt-1 mb-6">Araştırma ekibi için sohbetleri dosya olarak indirin.</p>
+
+<div class="tip mb-6">
+    <p class="font-bold flex items-center gap-2"><span class="material-icons" aria-hidden="true">verified_user</span>Dosyada kimsenin kimliği yer almaz</p>
+    <ul class="list-disc ml-6 mt-2 text-[15px] space-y-1">
+        <li>Ziyaretçiler <strong>K001, K002…</strong>, sohbetler <strong>S0001, S0002…</strong> gibi kodlarla gösterilir.</li>
+        <li>Mesajlardaki telefon, e-posta, T.C. kimlik, IBAN ve kart numaraları <strong>[TELEFON]</strong> gibi işaretlerle gizlenir.</li>
+        <li>Sadece kayda <strong>izin veren</strong> ziyaretçilerin sohbetleri dosyaya girer.</li>
+        <li>Aynı ziyaretçi başka bir gün tekrar gelirse yine aynı kodla (ör. K001) görünür.</li>
+        <li>Dosyada doğaya yakınlık cevapları (önce/sonra), sohbet süresi ve "Dinle" kullanımı gibi bilgiler de bulunur.</li>
+    </ul>
+</div>
+
+<form method="get" action="{{ url_for('admin.export_download') }}" class="card p-6 space-y-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div>
+            <label for="karakter" class="label">Hangi karakter?</label>
+            <select id="karakter" name="karakter" class="field">
+                <option value="">Hepsi</option>
+                {% for e in entities %}<option value="{{ e.id }}">{{ e.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="baslangic" class="label">Bu tarihten <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+            <input id="baslangic" name="baslangic" type="date" class="field"/>
+        </div>
+        <div>
+            <label for="bitis" class="label">Bu tarihe kadar <span class="font-normal text-slate-500">(isteğe bağlı)</span></label>
+            <input id="bitis" name="bitis" type="date" class="field"/>
+        </div>
+    </div>
+    <p class="help !mt-0">Tarih seçmezseniz tüm sohbetler indirilir.</p>
+
+    <label class="flex items-start gap-3 cursor-pointer">
+        <input type="checkbox" name="eski" class="w-6 h-6 mt-0.5 rounded"/>
+        <span><span class="block font-bold">Eski sohbetleri de ekle</span><span class="block help !mt-0">Onay ekranı eklenmeden önceki sohbetler. O dönemde ziyaretçilere yalnızca bilgilendirme yazısı gösteriliyordu; kullanmadan önce araştırma ekibine danışın.</span></span>
+    </label>
+
+    <fieldset>
+        <legend class="label">Dosya türü</legend>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button name="bicim" value="csv" class="btn btn-primary text-lg !py-5 flex-col !gap-1">
+                <span class="flex items-center gap-2"><span class="material-icons" aria-hidden="true">table_view</span>Excel dosyası indir</span>
+                <span class="text-sm font-normal">Excel ile açılır (CSV)</span>
+            </button>
+            <button name="bicim" value="json" class="btn btn-light text-lg !py-5 flex-col !gap-1">
+                <span class="flex items-center gap-2"><span class="material-icons" aria-hidden="true">data_object</span>Araştırma dosyası indir</span>
+                <span class="text-sm font-normal">Yazılım ile analiz için (JSON)</span>
+            </button>
+        </div>
+    </fieldset>
+</form>
+{% endblock %}

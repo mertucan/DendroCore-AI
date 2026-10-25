@@ -1,0 +1,146 @@
+{% extends "admin/base.html" %}
+{% block title %}Ana Sayfa{% endblock %}
+
+{% block content %}
+<div class="mb-7">
+    <h1 class="text-3xl font-extrabold text-slate-900">Hoş geldiniz 👋</h1>
+    <p class="text-slate-600 mt-1">Burada parktaki karakterlerin ne kadar sohbet ettiğini bir bakışta görebilirsiniz.</p>
+</div>
+
+{% if stats.needs_review %}
+<a href="{{ url_for('admin.conversations', incelenecek='on') }}" class="mb-6 rounded-2xl border-2 border-rose-300 bg-rose-50 p-4 flex items-center gap-3 text-rose-900 hover:bg-rose-100 transition">
+    <span class="material-icons text-3xl shrink-0" aria-hidden="true">report</span>
+    <span class="flex-1"><span class="block font-bold text-lg">{{ stats.needs_review }} sohbet incelenmeyi bekliyor</span><span class="block text-[15px]">Bu sohbetlerde uygunsuz olabilecek mesajlar var. Bakmak için tıklayın.</span></span>
+    <span class="material-icons" aria-hidden="true">chevron_right</span>
+</a>
+{% endif %}
+
+<!-- Büyük kısayollar -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <a href="{{ url_for('admin.entity_new') }}" class="card p-5 flex items-center gap-4 hover:border-primary hover:shadow-md transition">
+        <span class="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0"><span class="material-icons text-[#0a8f42] text-3xl" aria-hidden="true">add_circle</span></span>
+        <span><span class="block font-bold text-lg">Yeni karakter ekle</span><span class="block text-[15px] text-slate-500">Ağaç, kedi, çiçek…</span></span>
+    </a>
+    <a href="{{ url_for('admin.conversations') }}" class="card p-5 flex items-center gap-4 hover:border-primary hover:shadow-md transition">
+        <span class="w-14 h-14 rounded-2xl bg-sky-100 flex items-center justify-center shrink-0"><span class="material-icons text-sky-700 text-3xl" aria-hidden="true">forum</span></span>
+        <span><span class="block font-bold text-lg">Sohbetleri oku</span><span class="block text-[15px] text-slate-500">Ziyaretçiler ne konuştu?</span></span>
+    </a>
+    <a href="{{ url_for('admin.export_page') }}" class="card p-5 flex items-center gap-4 hover:border-primary hover:shadow-md transition">
+        <span class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0"><span class="material-icons text-amber-700 text-3xl" aria-hidden="true">download</span></span>
+        <span><span class="block font-bold text-lg">Verileri indir</span><span class="block text-[15px] text-slate-500">Araştırma için dosya</span></span>
+    </a>
+</div>
+
+<!-- Sayılar -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {% for value, label, icon in [
+        (stats.today, 'Bugünkü sohbet', 'today'),
+        (stats.week, 'Son 7 gün', 'date_range'),
+        (stats.total_conversations, 'Toplam sohbet', 'forum'),
+        (entity_count, 'Karakter', 'park'),
+    ] %}
+    <div class="card p-5">
+        <div class="flex items-center gap-2 text-slate-500 text-[15px] font-semibold"><span class="material-icons text-xl" aria-hidden="true">{{ icon }}</span>{{ label }}</div>
+        <p class="text-4xl font-extrabold text-slate-900 mt-2 tabular-nums">{{ value }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Günlük grafik -->
+    <section class="card p-6 lg:col-span-2" aria-labelledby="daily-title">
+        <h2 id="daily-title" class="text-xl font-bold">Son 14 günde sohbetler</h2>
+        <p class="help !mt-0 mb-5">Her çubuk bir günü gösterir. Çubuk ne kadar uzunsa o gün o kadar çok sohbet edilmiş.</p>
+        <div class="flex items-end gap-1.5 h-48" role="img" aria-label="Son 14 günün sohbet sayıları">
+            {% for day in stats.days %}
+            <div class="flex-1 flex flex-col items-center justify-end h-full group">
+                <span class="text-xs font-bold text-slate-700 mb-1 {{ '' if day.count else 'opacity-0' }}">{{ day.count }}</span>
+                <div class="w-full rounded-t-lg {{ 'bg-[#13ec6d]' if loop.last else 'bg-[#86efac]' }}" style="height: {{ (100 * day.count / stats.max_day)|round|int if day.count else 2 }}%" title="{{ day.date.strftime('%d.%m') }}: {{ day.count }} sohbet"></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="flex gap-1.5 mt-2">
+            {% for day in stats.days %}
+            <span class="flex-1 text-center text-[11px] text-slate-500 {{ 'font-bold text-slate-800' if loop.last }}">{{ 'Bugün' if loop.last else day.date.strftime('%d.%m') }}</span>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Beğeni -->
+    <section class="card p-6" aria-labelledby="like-title">
+        <h2 id="like-title" class="text-xl font-bold">Ziyaretçi memnuniyeti</h2>
+        <p class="help !mt-0 mb-5">Son 30 günde cevaplara verilen beğeniler.</p>
+        {% if stats.like_ratio is none %}
+        <p class="text-slate-500">Henüz beğeni verilmemiş.</p>
+        {% else %}
+        <p class="text-5xl font-extrabold text-[#0a8f42]">%{{ stats.like_ratio }}</p>
+        <p class="text-slate-600 mt-1">cevapları beğendi</p>
+        <div class="flex gap-4 mt-4 text-[15px]">
+            <span class="flex items-center gap-1"><span class="material-icons text-[#0fb854]" aria-hidden="true">thumb_up</span>{{ stats.likes }} beğendi</span>
+            <span class="flex items-center gap-1"><span class="material-icons text-rose-500" aria-hidden="true">thumb_down</span>{{ stats.dislikes }} beğenmedi</span>
+        </div>
+        {% if stats.reasons %}
+        <h3 class="font-bold mt-5 mb-2">Beğenilmeme sebepleri</h3>
+        <ul class="space-y-1 text-[15px]">
+            {% for reason in stats.reasons %}<li class="flex justify-between"><span>{{ reason.label }}</span><span class="font-bold">{{ reason.count }}</span></li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+    </section>
+</div>
+
+<!-- Araştırma özeti -->
+{% set r = stats.research %}
+<section class="card p-6 mt-6" aria-labelledby="research-title">
+    <h2 id="research-title" class="text-xl font-bold">Araştırma özeti</h2>
+    <p class="help !mt-0 mb-5">Son 30 gün. Yalnızca kayda izin veren ziyaretçiler.</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="rounded-2xl bg-[#f0fdf4] p-5">
+            <p class="font-bold flex items-center gap-2"><span class="material-icons text-[#0a8f42]" aria-hidden="true">nature_people</span>Doğaya yakınlık</p>
+            {% if r.pairs %}
+            <p class="mt-3 text-[15px]">Sohbetten önce <strong class="text-xl">{{ r.pre_avg }}</strong> → sonra <strong class="text-xl text-[#0a8f42]">{{ r.post_avg }}</strong> <span class="text-slate-500">(7 üzerinden)</span></p>
+            <p class="mt-2 text-[15px]">Ortalama değişim: <strong>{{ '%+.1f'|format(r.change_avg) }}</strong></p>
+            <p class="help">Her iki soruyu da cevaplayan {{ r.pairs }} kişiden {{ r.improved }} tanesi kendini doğaya daha yakın hissetti.</p>
+            {% else %}
+            <p class="text-slate-500 mt-3 text-[15px]">Henüz hem önce hem sonra soruyu cevaplayan yok.</p>
+            {% endif %}
+        </div>
+        <div class="rounded-2xl bg-sky-50 p-5">
+            <p class="font-bold flex items-center gap-2"><span class="material-icons text-sky-700" aria-hidden="true">replay</span>Tekrar gelenler</p>
+            {% if r.visitors %}
+            <p class="mt-3 text-4xl font-extrabold text-sky-800">{{ r.returning }}</p>
+            <p class="text-[15px]">ziyaretçi farklı günlerde tekrar geldi <span class="text-slate-500">({{ r.visitors }} ziyaretçiden)</span></p>
+            {% else %}
+            <p class="text-slate-500 mt-3 text-[15px]">Henüz veri yok.</p>
+            {% endif %}
+        </div>
+        <div class="rounded-2xl bg-amber-50 p-5">
+            <p class="font-bold flex items-center gap-2"><span class="material-icons text-amber-700" aria-hidden="true">timer</span>Kullanım</p>
+            {% if r.measured %}
+            <p class="mt-3 text-[15px]">Ortalama sohbet süresi: <strong class="text-xl">{{ r.avg_minutes if r.avg_minutes is not none else '—' }}</strong> dakika</p>
+            <p class="mt-2 text-[15px]">"Dinle" düğmesini kullananlar: <strong class="text-xl">%{{ r.listen_share }}</strong></p>
+            {% else %}
+            <p class="text-slate-500 mt-3 text-[15px]">Henüz veri yok.</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Karakterlere göre -->
+<section class="card p-6 mt-6" aria-labelledby="entity-title">
+    <h2 id="entity-title" class="text-xl font-bold">En çok kiminle konuşuldu?</h2>
+    <p class="help !mt-0 mb-5">Son 30 gün</p>
+    {% if stats.by_entity %}
+    <ul class="space-y-3">
+        {% for row in stats.by_entity %}
+        <li>
+            <div class="flex justify-between font-semibold mb-1"><span>{{ row.name }}</span><span>{{ row.count }} sohbet</span></div>
+            <div class="h-3 rounded-full bg-slate-100 overflow-hidden"><div class="h-full rounded-full bg-[#13ec6d]" style="width: {{ (100 * row.count / stats.max_entity)|round|int }}%"></div></div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-slate-500">Son 30 günde henüz sohbet yok. Ziyaretçiler konuşmaya başladığında burada görünecek.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,36 +1,9 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="tr">
+<html class="scroll-smooth" lang="{{ current_lang }}">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>{{ entity.name }} ile Sohbet - DendroVox</title>
-    <meta name="description" content="{{ entity.name }} ile sohbet et - DendroVox"/>
-    <meta name="theme-color" content="#13ec6d"/>
-    <link rel="manifest" href="/static/manifest.json"/>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>"/>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#13ec6d",
-                        "primary-dark": "#0fb854",
-                        "background-light": "#f6f8f7",
-                        "background-dark": "#102218",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                },
-            },
-        }
-    </script>
+{% include '_head.html' %}
+    <title>{{ _('{name} ile Sohbet - DendroVox').format(name=entity.name) }}</title>
+    <meta name="description" content="{{ _('{name} ile sohbet et - DendroVox').format(name=entity.name) }}"/>
     <style>
         .typing-indicator span {
             display: inline-block; width: 7px; height: 7px; border-radius: 50%;
@@ -57,94 +30,82 @@
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .typing-enter { animation: fadeSlideUp 0.25s ease-out forwards; }
+        .typing-enter, .fade-up { animation: fadeSlideUp 0.25s ease-out forwards; }
         #messages-container { scroll-behavior: smooth; }
-        .send-btn:hover .material-icons { animation: sendPulse 0.4s ease; }
-        @keyframes sendPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2) translateX(2px); }
-            100% { transform: scale(1); }
-        }
         .chat-disabled { opacity: 0.5; pointer-events: none; }
-        .quick-reply-btn {
-            transition: all 0.2s;
-        }
-        .quick-reply-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(19, 236, 109, 0.2);
+        .quick-reply-btn { transition: all 0.2s; }
+        .quick-reply-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(19, 236, 109, 0.2); }
+        .msg-action { transition: color .15s, background-color .15s; }
+        .spinner { width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+            .bot-enter, .user-enter, .typing-enter, .fade-up { animation: none; opacity: 1 !important; }
         }
     </style>
-    <script>
-        const saved = localStorage.getItem('dendrovox-theme');
-        if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
-    </script>
 </head>
-<body class="font-display bg-[#f0fdf4] dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased h-screen flex flex-col">
+<body class="font-display bg-[#f0fdf4] dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased h-[100dvh] flex flex-col">
 
     <!-- Offline Banner -->
-    <div id="offline-banner" class="hidden bg-red-500 text-white text-center py-1.5 text-xs font-medium">
-        <span class="material-icons text-xs align-middle mr-1">wifi_off</span> İnternet bağlantısı yok
-    </div>
-
-    <!-- Akademik Bildirim Banner -->
-    <div class="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 px-4 py-2 text-center" id="notice-banner">
-        <p class="text-xs text-blue-700 dark:text-blue-300">
-            <span class="font-semibold">Bilgilendirme:</span> Bu konuşmalar akademik araştırma amaçlı kayıt altına alınmaktadır. Devam ederek bunu kabul etmiş sayılırsınız.
-            <button class="ml-2 underline hover:no-underline" onclick="document.getElementById('notice-banner').style.display='none'">Kapat</button>
-        </p>
+    <div id="offline-banner" class="hidden bg-red-500 text-white text-center py-1.5 text-xs font-medium" role="status">
+        <span class="material-icons text-xs align-middle mr-1" aria-hidden="true">wifi_off</span> {{ _('İnternet bağlantısı yok') }}
     </div>
 
     <!-- Chat Header -->
-    <header class="bg-white dark:bg-[#152e22] shadow-sm px-4 py-3 flex items-center gap-3 border-b border-gray-100 dark:border-white/5">
-        <a href="/explore" class="text-slate-500 hover:text-primary transition-colors">
-            <span class="material-icons">arrow_back</span>
+    <header class="bg-white dark:bg-[#152e22] shadow-sm px-3 sm:px-4 py-3 flex items-center gap-3 border-b border-gray-100 dark:border-white/5">
+        <a href="/explore" id="back-link" class="text-slate-500 hover:text-primary transition-colors p-1" aria-label="{{ _('Keşfet sayfasına dön') }}">
+            <span class="material-icons" aria-hidden="true">arrow_back</span>
         </a>
-        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center border border-primary/20 overflow-hidden">
-            {% if entity.type == 'tree' %}
-                <span class="material-icons text-primary">park</span>
-            {% elif entity.type == 'cat' %}
-                <span class="material-icons text-primary">pets</span>
-            {% elif entity.type == 'flower' %}
-                <span class="material-icons text-primary">local_florist</span>
+        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center border border-primary/20 overflow-hidden shrink-0">
+            {% if entity.image_url %}
+            <img src="{{ entity.image_url }}" alt="" class="w-full h-full object-cover"/>
             {% else %}
-                <span class="material-icons text-primary">eco</span>
+            <span class="material-icons text-primary" aria-hidden="true">{{ entity.icon }}</span>
             {% endif %}
         </div>
-        <div class="flex-1">
-            <h1 class="font-bold text-sm text-slate-900 dark:text-white">{{ entity.name }}</h1>
-            <p class="text-xs text-primary flex items-center gap-1" id="status-text">
-                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                {{ entity.location }}
+        <div class="flex-1 min-w-0">
+            <h1 class="font-bold text-sm text-slate-900 dark:text-white truncate">{{ entity.name }}</h1>
+            <p class="text-xs text-primary flex items-center gap-1 truncate">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" aria-hidden="true"></span>
+                <span class="truncate">{{ entity.location }}</span>
             </p>
         </div>
-        <div class="flex items-center gap-2">
-            <button id="tts-toggle" class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full" title="Sesli okuma">
-                <span class="material-icons text-xl">volume_up</span>
+        <div class="flex items-center gap-1">
+            <button id="consent-chip" type="button" class="hidden text-[11px] font-semibold px-2 py-1 rounded-full border transition-colors"></button>
+            {% if page.facts %}
+            <button id="facts-btn" type="button" class="msg-action text-slate-400 hover:text-primary p-2 rounded-full" title="{{ _('Bilgi kartı') }}" aria-label="{{ _('Bilgi kartı') }}" aria-haspopup="dialog">
+                <span class="material-icons text-xl" aria-hidden="true">info</span>
             </button>
-            <p class="text-xs text-slate-400 hidden sm:block">{{ entity.species }}</p>
+            {% endif %}
+            <button id="auto-read-toggle" type="button" class="msg-action text-slate-400 hover:text-primary p-2 rounded-full" aria-pressed="false" title="{{ _('Sesli okuma kapalı') }}" aria-label="{{ _('Sesli okuma kapalı') }}">
+                <span class="material-icons text-xl" aria-hidden="true">volume_off</span>
+            </button>
+            <a href="/lang/{{ 'en' if current_lang == 'tr' else 'tr' }}?next={{ request.full_path|urlencode }}" class="text-slate-400 hover:text-primary px-2 py-1 rounded-full text-xs font-bold" aria-label="{{ _('Dili değiştir') }}">{{ ('en' if current_lang == 'tr' else 'tr')|upper }}</a>
         </div>
     </header>
 
+    <!-- Bağlam şeridi: mevsim / saat / hava -->
+    <div id="context-strip" class="hidden px-4 py-1.5 bg-primary/5 dark:bg-primary/10 border-b border-primary/10 text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-center gap-3" aria-label="{{ _('Şu anki ortam') }}"></div>
+
     <!-- Messages Container -->
-    <main class="flex-1 overflow-y-auto p-4 space-y-3" id="messages-container">
-        <div class="text-xs text-center text-gray-400 my-2">Bugün</div>
+    <main class="flex-1 overflow-y-auto p-4 space-y-3" id="messages-container" role="log" aria-live="off" aria-label="{{ _('Sohbet') }}" tabindex="-1">
+        <div class="text-xs text-center text-gray-400 my-2">{{ _('Bugün') }}</div>
     </main>
+    <!-- Ekran okuyucular için: tamamlanan cevaplar burada tek seferde duyurulur -->
+    <div id="sr-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed left-1/2 -translate-x-1/2 bottom-28 z-40 bg-slate-900 text-white text-sm px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 max-w-[90vw]" role="status" aria-live="polite"></div>
 
     <!-- Quick Replies -->
-    <div id="quick-replies" class="px-4 pb-2">
-        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        </div>
+    <div id="quick-replies" class="px-4 pb-2 hidden">
+        <div class="flex gap-2 overflow-x-auto pb-1"></div>
     </div>
 
     <!-- Typing Indicator -->
-    <div class="px-4 pb-2 hidden" id="typing-indicator">
+    <div class="px-4 pb-2 hidden" id="typing-indicator" aria-hidden="true">
         <div class="flex items-end gap-2 typing-enter">
             <div class="bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm border border-gray-100 dark:border-white/5">
-                <div class="typing-indicator flex items-center gap-1">
-                    <span></span><span></span><span></span>
-                </div>
+                <div class="typing-indicator flex items-center gap-1"><span></span><span></span><span></span></div>
             </div>
         </div>
     </div>
@@ -152,319 +113,132 @@
     <!-- Input Area -->
     <footer class="bg-white dark:bg-[#152e22] border-t border-gray-100 dark:border-white/5 p-3">
         <form id="chat-form" class="flex items-center gap-2 bg-gray-100 dark:bg-black/20 rounded-full px-4 py-2">
-            <input
-                type="text"
-                id="message-input"
-                class="bg-transparent border-none text-sm w-full focus:ring-0 px-0 dark:text-white placeholder-gray-400"
-                placeholder="Bir şeyler sor..."
-                autocomplete="off"
-            />
-            <button type="submit" class="send-btn text-primary hover:text-primary-dark transition-colors disabled:opacity-30">
-                <span class="material-icons text-xl">send</span>
+            <label for="message-input" class="sr-only">{{ _('Mesajın') }}</label>
+            <input type="text" id="message-input" maxlength="1000"
+                   class="bg-transparent border-none text-base sm:text-sm w-full focus:ring-0 px-0 dark:text-white placeholder-gray-400"
+                   placeholder="{{ _('Bir şeyler sor...') }}" autocomplete="off" enterkeyhint="send"/>
+            <button type="submit" class="send-btn text-primary hover:text-primary-dark transition-colors disabled:opacity-30 p-1" aria-label="{{ _('Gönder') }}">
+                <span class="material-icons text-xl" aria-hidden="true">send</span>
             </button>
         </form>
-        <div class="text-center mt-1 hidden" id="limit-info">
-            <p class="text-xs text-slate-400" id="limit-text"></p>
+        <div class="flex items-center justify-center gap-3 mt-1 min-h-[1.25rem]">
+            <p class="text-xs text-slate-400 hidden" id="limit-text" role="status"></p>
+            <button type="button" id="finish-btn" class="hidden text-xs font-semibold text-slate-500 dark:text-slate-300 hover:text-primary inline-flex items-center gap-1">
+                <span class="material-icons text-sm" aria-hidden="true">flag</span>{{ _('Sohbeti bitir') }}
+            </button>
         </div>
     </footer>
 
-    <script>
-        const ENTITY = {
-            id: "{{ entity.id }}",
-            name: "{{ entity.name }}",
-            type: "{{ entity.type }}",
-            species: "{{ entity.species }}",
-            age_years: {{ entity.age_years }},
-            location: "{{ entity.location }}",
-            description: "{{ entity.description }}",
-        };
+    <!-- Doğaya yakınlık ölçeği (sohbet öncesi / sonrası) -->
+    {% set ins_distances = [44, 30, 24, 18, 12, 6, 2] %}
+    {% set ins_labels = [_('Doğadan tamamen ayrı'), _('Doğaya çok uzak'), _('Doğaya biraz uzak'), _('Yarı yarıya iç içe'), _('Doğaya biraz yakın'), _('Doğaya çok yakın'), _('Doğayla tamamen iç içe')] %}
+    <div id="ins-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="ins-title" aria-describedby="ins-question">
+        <div class="bg-white dark:bg-[#132a1f] w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 fade-up">
+            <p id="ins-title" class="text-xs font-bold uppercase tracking-wider text-primary-dark dark:text-primary"></p>
+            <h2 id="ins-question" class="text-lg font-bold text-slate-900 dark:text-white mt-1 mb-3"></h2>
+            <div class="flex items-center justify-center gap-4 text-xs text-slate-500 dark:text-slate-300 mb-3" aria-hidden="true">
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full border-2 border-slate-400"></span>{{ _('Ben') }}</span>
+                <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full border-2 border-primary bg-primary/30"></span>{{ _('Doğa') }}</span>
+            </div>
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-2" role="radiogroup" aria-labelledby="ins-question">
+                {% for d in ins_distances %}
+                <button type="button" class="ins-option flex flex-col items-center gap-1 rounded-xl border-2 border-slate-200 dark:border-white/10 hover:border-primary focus:border-primary p-1.5" data-value="{{ loop.index }}" role="radio" aria-checked="false" aria-label="{{ loop.index }}: {{ ins_labels[loop.index0] }}">
+                    <svg viewBox="0 0 76 36" class="w-full h-8" aria-hidden="true">
+                        <circle cx="{{ 38 - d / 2 }}" cy="18" r="15" fill="none" stroke="#94a3b8" stroke-width="2.5"/>
+                        <circle cx="{{ 38 + d / 2 }}" cy="18" r="15" fill="rgba(19,236,109,.3)" stroke="#0fb854" stroke-width="2.5"/>
+                    </svg>
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">{{ loop.index }}</span>
+                </button>
+                {% endfor %}
+            </div>
+            <div class="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 px-1" aria-hidden="true">
+                <span>{{ _('Ayrı') }}</span><span>{{ _('İç içe') }}</span>
+            </div>
+            <button type="button" id="ins-skip" class="mt-4 w-full py-3 rounded-xl text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-white/10">{{ _('Bu soruyu geç') }}</button>
+        </div>
+    </div>
 
-        const messagesContainer = document.getElementById('messages-container');
-        const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message-input');
-        const typingIndicator = document.getElementById('typing-indicator');
-        const limitInfo = document.getElementById('limit-info');
-        const limitText = document.getElementById('limit-text');
-        const sendBtn = chatForm.querySelector('button[type="submit"]');
-        const quickRepliesContainer = document.getElementById('quick-replies');
-
-        const SESSION_ID = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
-            ? crypto.randomUUID()
-            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-                const r = Math.random() * 16 | 0;
-                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-            });
-        let conversationId = null;
-        let conversationHistory = [];
-        let isWaitingResponse = false;
-        let ttsEnabled = false;
-
-        // ─── TTS ───
-        const ttsToggle = document.getElementById('tts-toggle');
-        let cachedVoices = [];
-
-        function loadVoices() {
-            cachedVoices = speechSynthesis.getVoices();
-        }
-
-        if ('speechSynthesis' in window) {
-            loadVoices();
-            speechSynthesis.addEventListener('voiceschanged', loadVoices);
-        }
-
-        ttsToggle.addEventListener('click', () => {
-            ttsEnabled = !ttsEnabled;
-            ttsToggle.querySelector('.material-icons').textContent = ttsEnabled ? 'volume_up' : 'volume_off';
-            ttsToggle.classList.toggle('text-primary', ttsEnabled);
-            ttsToggle.classList.toggle('text-slate-400', !ttsEnabled);
-            if (!ttsEnabled) speechSynthesis.cancel();
-        });
-
-        function speakText(text) {
-            if (!ttsEnabled || !('speechSynthesis' in window)) return;
-            speechSynthesis.cancel();
-
-            if (cachedVoices.length === 0) {
-                cachedVoices = speechSynthesis.getVoices();
-            }
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'tr-TR';
-            utterance.rate = 0.95;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-
-            const trVoice = cachedVoices.find(v => v.lang.startsWith('tr'));
-            if (trVoice) utterance.voice = trVoice;
-
-            // Chrome bug: long texts get cut off; chunk restart workaround
-            let resumeTimer;
-            utterance.onstart = () => {
-                resumeTimer = setInterval(() => {
-                    if (!speechSynthesis.speaking) {
-                        clearInterval(resumeTimer);
-                    } else {
-                        speechSynthesis.pause();
-                        speechSynthesis.resume();
-                    }
-                }, 10000);
-            };
-            utterance.onend = () => clearInterval(resumeTimer);
-            utterance.onerror = () => clearInterval(resumeTimer);
-
-            speechSynthesis.speak(utterance);
-        }
-
-        // ─── Quick Replies ───
-        const quickReplyMap = {
-            'tree': ['Kaç yaşındasın?', 'En eski anın ne?', 'Yapraklarını ne zaman dökersin?', 'Köklerini anlat'],
-            'cat': ['En sevdiğin mama ne?', 'Günün nasıl geçiyor?', 'Köpekler hakkında ne düşünüyorsun?', 'En iyi güneşlenme yerin neresi?'],
-            'flower': ['Ne zaman çiçek açarsın?', 'En sevdiğin mevsim hangisi?', 'Seni kim dikti?', 'Kokun nasıl?'],
-        };
-
-        function showQuickReplies() {
-            const replies = quickReplyMap[ENTITY.type] || ['Merhaba!', 'Bana kendini anlat', 'Burada ne kadar süredir varsın?'];
-            const container = quickRepliesContainer.querySelector('div');
-            container.innerHTML = replies.map(r =>
-                `<button type="button" class="quick-reply-btn whitespace-nowrap px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 dark:bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20">${escapeHtml(r)}</button>`
-            ).join('');
-            container.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    messageInput.value = btn.textContent;
-                    chatForm.dispatchEvent(new Event('submit'));
-                    quickRepliesContainer.classList.add('hidden');
-                });
-            });
-        }
-
-        // ─── Karşılama Mesajları ───
-        const welcomeMessages = {
-            'tree': `Merhaba gezgin! Ben ${ENTITY.name}. Tam ${ENTITY.age_years} yıldır ${ENTITY.location} bölgesinde dimdik duruyorum. Yapraklarımda hissettiğim rüzgarın hikâyesini duymak ister misin?`,
-            'cat': `Hey, sen yeni misin buralarda? Ben ${ENTITY.name}. ${ENTITY.location}'nın en havalı kedisi benim. ${ENTITY.age_years} yıldır bu bölgenin efendisiyim. Bana bir şeyler sormak ister misin?`,
-            'flower': `Merhaba! Ben ${ENTITY.name}. ${ENTITY.location}'nda en güzel kokularla sizi karşılıyorum. Rengarenk dünyamı merak ediyor musunuz?`,
-        };
-
-        // ─── Zaman Formatlama ───
-        function getTimeStr() {
-            return new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-        }
-
-        // ─── Mesaj Ekleme Fonksiyonları ───
-        function addUserMessage(text) {
-            const time = getTimeStr();
-            const div = document.createElement('div');
-            div.className = 'flex items-end gap-2 justify-end';
-            div.style.opacity = '0';
-            div.innerHTML = `
-                <div class="max-w-[80%]">
-                    <div class="bg-primary p-3 rounded-2xl rounded-br-none shadow-md">
-                        <p class="text-sm text-background-dark font-medium">${escapeHtml(text)}</p>
-                    </div>
-                    <p class="text-[10px] text-slate-400 text-right mt-1 mr-1">${time}</p>
+    <!-- Bilgi kartı -->
+    {% if page.facts %}
+    <div id="facts-sheet" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="facts-title">
+        <div class="bg-white dark:bg-[#132a1f] w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 max-h-[85dvh] overflow-y-auto fade-up">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-wider text-primary-dark dark:text-primary">{{ _('Bilgi kartı') }}</p>
+                    <h2 id="facts-title" class="text-xl font-bold text-slate-900 dark:text-white">{{ entity.name }}</h2>
                 </div>
-            `;
-            messagesContainer.appendChild(div);
-            requestAnimationFrame(() => { div.className += ' user-enter'; });
-            scrollToBottom();
-        }
+                <button type="button" id="facts-close" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10" aria-label="{{ _('Kapat') }}"><span class="material-icons" aria-hidden="true">close</span></button>
+            </div>
+            <dl class="grid grid-cols-2 gap-3 my-4 text-sm">
+                {% if entity.species %}<div class="rounded-xl bg-slate-50 dark:bg-white/5 p-3"><dt class="text-xs text-slate-500">{{ _('Türü') }}</dt><dd class="font-semibold">{{ entity.species }}</dd></div>{% endif %}
+                {% if entity.age_years is not none %}<div class="rounded-xl bg-slate-50 dark:bg-white/5 p-3"><dt class="text-xs text-slate-500">{{ _('Yaşı') }}</dt><dd class="font-semibold">{{ entity.age_years }}</dd></div>{% endif %}
+                <div class="rounded-xl bg-slate-50 dark:bg-white/5 p-3 col-span-2"><dt class="text-xs text-slate-500">{{ _('Yeri') }}</dt><dd class="font-semibold">{{ entity.location }}</dd></div>
+            </dl>
+            <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 mb-2"><span class="material-icons text-primary text-lg" aria-hidden="true">verified</span>{{ _('Doğrulanmış bilgiler') }}</h3>
+            <ul class="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                {% for fact in page.facts %}<li class="flex gap-2"><span class="material-icons text-primary text-base shrink-0 mt-0.5" aria-hidden="true">check_circle</span><span>{{ fact }}</span></li>{% endfor %}
+            </ul>
+            <p class="text-xs text-slate-500 mt-4">{{ _('Sohbetteki anlatım kurgusaldır; bu kartta yalnızca doğruluğu kontrol edilmiş bilgiler yer alır.') }}</p>
+        </div>
+    </div>
+    {% endif %}
 
-        function addBotMessage(text, typewrite = false) {
-            const time = getTimeStr();
-            const div = document.createElement('div');
-            div.className = 'flex items-start gap-2';
-            div.style.opacity = '0';
+    <!-- Açık rıza ekranı -->
+    <div id="consent-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="consent-title" aria-describedby="consent-desc">
+        <div class="bg-white dark:bg-[#132a1f] w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92dvh] overflow-y-auto fade-up">
+            <div class="p-6 sm:p-7">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-primary/15 flex items-center justify-center shrink-0">
+                        <span class="material-icons text-primary text-3xl" aria-hidden="true">shield</span>
+                    </div>
+                    <h2 id="consent-title" class="text-xl font-bold text-slate-900 dark:text-white">{{ _('Sohbete başlamadan önce') }}</h2>
+                </div>
+                <div id="consent-desc" class="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p>{{ _('DendroVox bir akademik araştırma projesidir. İnsanların doğayla nasıl bağ kurduğunu inceliyoruz.') }}</p>
+                    <ul class="space-y-2.5">
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">chat</span><span>{{ _('İzin verirsen yazdığın mesajlar, karakterin cevapları ve cevaplara verdiğin beğeniler isimsiz olarak kaydedilir.') }}</span></li>
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">visibility_off</span><span>{{ _('Adını, telefonunu veya adresini yazma. Yazsan bile telefon, e-posta ve kimlik numarası gibi bilgiler otomatik olarak gizlenir.') }}</span></li>
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">no_accounts</span><span>{{ _('Üyelik, isim veya konum istemiyoruz. Araştırmacılar seni tanıyamaz; yalnızca takma kodlar görür.') }}</span></li>
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">insights</span><span>{{ _('Sohbetten önce ve sonra tek bir soru sorarız. Sohbet süresi ve "Dinle" kullanımı gibi isimsiz ölçümler de kaydedilir.') }}</span></li>
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">key</span><span>{{ _('Tarayıcına rastgele bir kod kaydedilir. Tekrar geldiğinde aynı ziyaretçi olduğun anlaşılır ama kim olduğun bilinmez.') }}</span></li>
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">volunteer_activism</span><span>{{ _('Katılım tamamen gönüllüdür. İstersen kayıt olmadan da sohbet edebilir, istediğin an bırakabilirsin.') }}</span></li>
+                        <li class="flex gap-2.5"><span class="material-icons text-primary text-lg shrink-0" aria-hidden="true">family_restroom</span><span>{{ _('18 yaşından küçüksen lütfen bir yetişkinle birlikte karar ver.') }}</span></li>
+                    </ul>
+                    <details class="rounded-xl bg-slate-50 dark:bg-white/5 px-4 py-3">
+                        <summary class="cursor-pointer font-semibold text-slate-800 dark:text-slate-100">{{ _('Veriler nasıl kullanılır?') }}</summary>
+                        <p class="mt-2">{{ _('Kayıtlar yalnızca araştırma ekibi tarafından bilimsel analiz için kullanılır; raporlarda yalnızca isimsiz ve toplu sonuçlar yer alır. Kararını sohbet ekranının üstündeki "Kayıt" düğmesinden istediğin zaman değiştirebilirsin; bundan sonraki mesajlar kaydedilmez. Daha önce kaydedilenlerin silinmesi için araştırma ekibine başvurabilirsin.') }}</p>
+                    </details>
+                </div>
+                <div class="mt-6 flex flex-col gap-2.5">
+                    <button type="button" id="consent-yes" class="w-full bg-primary hover:bg-primary-dark text-background-dark font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                        <span class="material-icons" aria-hidden="true">check_circle</span> {{ _('Kabul ediyorum, sohbete başla') }}
+                    </button>
+                    <button type="button" id="consent-no" class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-800 dark:text-slate-100 font-semibold py-3.5 rounded-xl transition-colors">
+                        {{ _('Kayıt olmadan sohbet et') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'max-w-[80%]';
-
-            const textP = document.createElement('p');
-            textP.className = 'text-sm text-slate-700 dark:text-slate-200 leading-relaxed';
-
-            const bubble = document.createElement('div');
-            bubble.className = 'bg-white dark:bg-[#1a382a] p-3 rounded-2xl rounded-bl-none shadow-sm border border-gray-100 dark:border-white/5';
-            bubble.appendChild(textP);
-
-            const timeEl = document.createElement('p');
-            timeEl.className = 'text-[10px] text-slate-400 mt-1 ml-1';
-            timeEl.textContent = time;
-
-            wrapper.appendChild(bubble);
-            wrapper.appendChild(timeEl);
-            div.appendChild(wrapper);
-
-            messagesContainer.appendChild(div);
-            requestAnimationFrame(() => { div.className += ' bot-enter'; });
-
-            if (typewrite && text.length > 0) {
-                typewriteText(textP, text, 0, () => speakText(text));
-            } else {
-                textP.textContent = text;
-                speakText(text);
-            }
-            scrollToBottom();
-        }
-
-        function typewriteText(element, text, index, onComplete) {
-            if (index < text.length) {
-                const chunkSize = Math.floor(Math.random() * 3) + 1;
-                const chunk = text.slice(index, index + chunkSize);
-                element.textContent += chunk;
-                scrollToBottom();
-                const delay = Math.floor(Math.random() * 20) + 10;
-                setTimeout(() => typewriteText(element, text, index + chunkSize, onComplete), delay);
-            } else if (onComplete) {
-                onComplete();
-            }
-        }
-
-        function showTyping() { typingIndicator.classList.remove('hidden'); scrollToBottom(); }
-        function hideTyping() { typingIndicator.classList.add('hidden'); }
-        function scrollToBottom() { messagesContainer.scrollTop = messagesContainer.scrollHeight; }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function updateLimitCounter() {
-            const remaining = 25 - conversationHistory.length;
-            if (remaining <= 10 && remaining > 0) {
-                limitInfo.classList.remove('hidden');
-                limitText.textContent = `${remaining} mesaj hakkınız kaldı`;
-            }
-        }
-
-        // ─── Chat API ───
-        async function sendMessage(message) {
-            if (isWaitingResponse) return;
-            isWaitingResponse = true;
-            sendBtn.disabled = true;
-
-            try {
-                showTyping();
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        entity_id: ENTITY.id,
-                        message: message,
-                        conversation_history: conversationHistory,
-                        session_id: SESSION_ID,
-                        conversation_id: conversationId
-                    })
-                });
-
-                const data = await response.json();
-                hideTyping();
-
-                if (data.reply) {
-                    if (data.conversation_id) conversationId = data.conversation_id;
-                    addBotMessage(data.reply, true);
-                    conversationHistory.push(
-                        { role: 'user', content: message },
-                        { role: 'assistant', content: data.reply }
-                    );
-                    updateLimitCounter();
-                    if (data.limit_reached) endConversation();
-                } else {
-                    addBotMessage('Hmm, bir sorun oldu. Tekrar dener misin?');
-                }
-            } catch (error) {
-                hideTyping();
-                addBotMessage('Bağlantı hatası oluştu. Lütfen tekrar deneyin.');
-                console.error('Chat API error:', error);
-            } finally {
-                isWaitingResponse = false;
-                sendBtn.disabled = false;
-            }
-        }
-
-        function endConversation() {
-            messageInput.disabled = true;
-            messageInput.placeholder = "Sohbet sonlandı.";
-            sendBtn.disabled = true;
-            chatForm.classList.add('chat-disabled');
-            quickRepliesContainer.classList.add('hidden');
-            limitInfo.classList.remove('hidden');
-            limitText.textContent = "Mesaj limiti doldu";
-            setTimeout(() => {
-                addBotMessage("Bu sohbetin mesaj limitine ulaşıldı. Başka bir karakterle konuşmak için Keşfet sayfasına dönebilirsin.", true);
-            }, 500);
-        }
-
-        // ─── Form Submit ───
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const message = messageInput.value.trim();
-            if (!message || isWaitingResponse) return;
-            addUserMessage(message);
-            messageInput.value = '';
-            quickRepliesContainer.classList.add('hidden');
-            sendMessage(message);
-        });
-
-        // ─── Init ───
-        const welcomeText = welcomeMessages[ENTITY.type] || `Merhaba! Ben ${ENTITY.name}. Seninle tanışmak ne güzel!`;
-        setTimeout(() => {
-            showTyping();
-            const typingDelay = 800 + Math.random() * 600;
-            setTimeout(() => {
-                hideTyping();
-                addBotMessage(welcomeText, true);
-                showQuickReplies();
-            }, typingDelay);
-        }, 400);
-
-        // Offline
-        const offlineBanner = document.getElementById('offline-banner');
-        window.addEventListener('offline', () => offlineBanner.classList.remove('hidden'));
-        window.addEventListener('online', () => offlineBanner.classList.add('hidden'));
-
-        // PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/static/sw.js').catch(() => {});
-        }
+    <script src="/static/js/collection.js"></script>
+    <script src="/static/js/voice.js"></script>
+    <script>
+        window.CHAT = {
+            entity: {{ entity|tojson }},
+            welcome: {{ page.welcome|tojson }},
+            quickReplies: {{ page.quick_replies|tojson }},
+            voice: {{ page.voice|tojson }},
+            chatLimit: {{ page.chat_limit|tojson }},
+            consentVersion: {{ page.consent_version|tojson }},
+            entityTotal: {{ page.entity_total|tojson }},
+            lang: {{ page.lang|tojson }},
+            locale: {{ page.locale|tojson }},
+            strings: {{ strings|tojson }},
+            facts: {{ page.facts|tojson }},
+            route: {{ page.route|tojson }},
+        };
     </script>
+    <script src="/static/js/chat.js"></script>
 </body>
 </html>

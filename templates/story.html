@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}DendroVox - Hikaye{% endblock %}
+{% block title %}{{ _('DendroVox - Hikaye') }}{% endblock %}
 
 {% block content %}
 <section class="py-24 bg-[#f6fcf8] dark:bg-background-dark relative overflow-hidden">
@@ -11,15 +11,15 @@
                 <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl"></div>
                 <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
                 <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-white/10 group">
-                    <img alt="Ancient tree trunk with moss and detailed bark texture in a forest" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKp6wIgR7pHYUB1Cb0ENmKfSHPdPmObamhXRDFEArKZdRS8GhByND5soGPYKmqJvJN6vhZOd4BxHdAwr8TzZpKar4U_Lv_wRui6zI3X4P0_IbpgIOIyU5FPWpI34PQP2FEq9Xq_52bb4wnLrF5hY5tMU-Pf0E4O2ljvRqtpGyOh-vbD0te4-pCt8Ynu1YobJVTsHnRk6jU_UQEZQmktIY641fN4TFtIswFr1XPudTXgT4wTGtmOi9nIwNc7BqQg9gW7Q31X059CrC6"/>
+                    <img alt="{{ _('Yosunlu, asırlık bir ağaç gövdesi') }}" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKp6wIgR7pHYUB1Cb0ENmKfSHPdPmObamhXRDFEArKZdRS8GhByND5soGPYKmqJvJN6vhZOd4BxHdAwr8TzZpKar4U_Lv_wRui6zI3X4P0_IbpgIOIyU5FPWpI34PQP2FEq9Xq_52bb4wnLrF5hY5tMU-Pf0E4O2ljvRqtpGyOh-vbD0te4-pCt8Ynu1YobJVTsHnRk6jU_UQEZQmktIY641fN4TFtIswFr1XPudTXgT4wTGtmOi9nIwNc7BqQg9gW7Q31X059CrC6"/>
                     <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
                         <div class="flex items-center gap-3">
                             <div class="bg-primary/90 p-2 rounded-lg text-background-dark">
                                 <span class="material-icons text-xl">qr_code_scanner</span>
                             </div>
                             <div class="text-white">
-                                <p class="text-xs opacity-75">Taranan Nesne</p>
-                                <p class="font-bold">Asırlık Meşe Ağacı</p>
+                                <p class="text-xs opacity-75">{{ _('Taranan Nesne') }}</p>
+                                <p class="font-bold">{{ _('Asırlık Meşe Ağacı') }}</p>
                             </div>
                         </div>
                     </div>
@@ -28,27 +28,27 @@
             <!-- Text Side -->
             <div class="w-full lg:w-1/2">
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
-                    Her Ağacın Bir <span class="text-primary">Hikayesi</span> Var
+                    {{ _('Her Ağacın Bir') }} <span class="text-primary">{{ _('Hikayesi') }}</span> {{ _('Var') }}
                 </h2>
                 <p class="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                    DendroVox, parklardaki nesnelere ses verir. Yanından geçip gittiğiniz o yaşlı çınar ağacı, köşedeki kedi evi veya parkın ortasındaki heykel... Hepsi yapay zeka sayesinde dile geliyor.
+                    {{ _('DendroVox, parklardaki nesnelere ses verir. Yanından geçip gittiğiniz o yaşlı çınar ağacı, köşedeki kedi evi veya parkın ortasındaki heykel... Hepsi yapay zeka sayesinde dile geliyor.') }}
                 </p>
                 <p class="text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
-                    Sadece biyolojik bilgiler değil, onların "gördükleri", "hissettikleri" ve tanıklık ettikleri tarihi 1. ağızdan dinleyin. Doğayı bir ders kitabı gibi değil, yaşayan bir dost gibi deneyimleyin.
+                    {{ _('Sadece biyolojik bilgiler değil, onların "gördükleri", "hissettikleri" ve tanıklık ettikleri tarihi 1. ağızdan dinleyin. Doğayı bir ders kitabı gibi değil, yaşayan bir dost gibi deneyimleyin.') }}
                 </p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div class="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 shadow-sm">
                         <span class="material-icons text-primary mt-1">park</span>
                         <div>
-                            <h4 class="font-bold text-slate-900 dark:text-white">Ağaçlar</h4>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Yüzlerce yıllık tanıklıklarını anlatır.</p>
+                            <h4 class="font-bold text-slate-900 dark:text-white">{{ _('Ağaçlar') }}</h4>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">{{ _('Yüzlerce yıllık tanıklıklarını anlatır.') }}</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-3 p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 shadow-sm">
                         <span class="material-icons text-primary mt-1">pets</span>
                         <div>
-                            <h4 class="font-bold text-slate-900 dark:text-white">Kedi Evleri</h4>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Park sakinlerinin günlük maceralarını fısıldar.</p>
+                            <h4 class="font-bold text-slate-900 dark:text-white">{{ _('Kedi Evleri') }}</h4>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">{{ _('Park sakinlerinin günlük maceralarını fısıldar.') }}</p>
                         </div>
                     </div>
                 </div>

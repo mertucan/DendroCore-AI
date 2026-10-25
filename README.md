@@ -35,8 +35,28 @@ Proje, **insan-bilgisayar etkileşimi** ve **kentsel ekoloji farkındalığı** 
 | **Backend** | Python 3.11+ / Flask |
 | **Frontend** | HTML5, Tailwind CSS, Vanilla JS |
 | **Veritabanı** | Supabase (PostgreSQL) |
-| **AI/LLM** | Henüz belirlenmedi (OpenAI / Gemini / Anthropic) |
-| **QR Kod** | Dinamik QR kod sistemi |
+| **AI/LLM** | Google Gemini (akışlı sohbet + Gemini TTS ile karakter sesleri) |
+| **QR Kod** | Planlanıyor |
+
+---
+
+## Özellikler
+
+- **Akışlı sohbet:** Cevaplar Gemini'den parça parça gelir; ilk kelimeler ~1 sn'de görünür.
+- **Bağlama duyarlı karakterler:** Karakterler mevsimi, günün saatini ve bulundukları yerin anlık havasını (Open-Meteo) bilir.
+- **Karakter sesleri:** Her cevabın altında "Dinle" düğmesi; karakterin türüne göre seçilmiş Gemini sesi ve ton yönergesi. Gemini sesi alınamazsa tarayıcı sesi devreye girer. Görme engelliler için otomatik sesli okuma ve ekran okuyucu duyuruları.
+- **Açık rıza:** Sohbetten önce onay ekranı. Rıza vermeyenler kayıt olmadan sohbet eder (veriler yalnızca geçici bellekte, 2 saat sonra silinir).
+- **Cevap başına mini anket:** 👍 / 👎 ve beğenmeme sebebi.
+- **Keşif koleksiyonu:** Tanışılan karakterler ve rozetler (tarayıcıda saklanır).
+- **Doğaya yakınlık ölçümü:** Sohbet öncesi ve sonrası tek soruluk "Inclusion of Nature in Self" ölçeği (1-7, iç içe geçen daireler).
+- **İsimsiz etkileşim ölçümleri:** Sohbet süresi, ilk mesaja kadar geçen süre, hazır soru / yazılan mesaj, "Dinle" ve bilgi kartı kullanımı, sohbetin nasıl bittiği.
+- **Tekrar gelen ziyaretçi:** Rıza verilirse tarayıcıya rastgele bir kod kaydedilir; veritabanında yalnızca tuzlanmış özeti tutulur. (`SECRET_KEY` değişirse eşleşme kopar.)
+- **Park rotası:** Sohbet sonunda en yakın (önce tanışılmamış) karakterler, uzaklık ve yürüme yol tarifiyle önerilir; 2 km içindeki komşular karakterin konuşmasına da girer.
+- **Doğrulanmış bilgi kartı:** Admin'in girdiği kesin bilgiler "Bilgi kartı" ve "Biliyor muydun?" olarak gösterilir; model rakam verirken bunlara dayanır.
+- **Uygunsuz mesaj işaretleme:** Küfür, tehdit, cinsel içerik ve kendine zarar verme ifadeleri işaretlenir, admin panelinde "İncelenecek" olarak görünür. Kendine zarar verme ifadelerinde ziyaretçiye yardım bilgisi (112) gösterilir. Sözlük: `dendrovox/moderation.py`.
+- **Çoklu dil:** Türkçe / İngilizce (`translations/en.json`).
+- **Yönetim paneli (`/admin`):** Teknik bilgi gerektirmeyen arayüz. Karakter ekleme/düzenleme (haritadan konum, fotoğraf, ses önizleme), sohbetleri okuma/silme, istatistikler, anonim veri indirme (Excel/CSV ve JSON).
+- **Gizlilik:** Telefon, e-posta, T.C. kimlik, IBAN ve kart numaraları kaydedilmeden önce maskelenir; dışa aktarımda kimlikler takma kodlarla (K001, S0001) değiştirilir.
 
 ---
 
@@ -44,23 +64,24 @@ Proje, **insan-bilgisayar etkileşimi** ve **kentsel ekoloji farkındalığı** 
 
 ```
 DendroCore-AI/
-├── app.py                  # Ana Flask uygulaması
-├── requirements.txt        # Python bağımlılıkları
-├── .env.example            # Ortam değişkenleri şablonu
-├── .gitignore
-├── README.md               # Bu dosya
-├── tasks.md                # Proje görev takibi
-│
-├── templates/              # HTML şablonları (Jinja2)
-│   ├── index.html          # Landing page
-│   ├── chat.html           # Sohbet sayfası
-│   ├── 404.html            # Sayfa bulunamadı
-│   └── 500.html            # Sunucu hatası
-│
-└── static/                 # Statik dosyalar
-    ├── css/                # Ek stil dosyaları
-    ├── js/                 # JavaScript dosyaları
-    └── images/             # Görseller, avatarlar
+├── app.py                    # Geliştirme sunucusu giriş noktası
+├── dendrovox/
+│   ├── __init__.py           # Uygulama fabrikası (create_app)
+│   ├── config.py             # .env ayarları
+│   ├── entities.py           # Karakter tohumları, ses profilleri, sistem promptu
+│   ├── context.py            # Mevsim / saat / hava durumu
+│   ├── llm.py                # Gemini sohbet (akışlı) + TTS, model zinciri ve yeniden deneme
+│   ├── storage.py            # Supabase ve bellek depoları
+│   ├── privacy.py            # Kişisel veri maskeleme
+│   ├── reports.py            # Admin istatistikleri ve anonim dışa aktarım
+│   ├── security.py           # Oturum, CSRF, istek sınırı, güvenlik başlıkları
+│   ├── i18n.py               # Çoklu dil
+│   └── routes/               # pages.py, api.py, admin.py
+├── templates/                # Ziyaretçi sayfaları + admin/
+├── static/js/                # chat.js, voice.js, collection.js
+├── translations/en.json      # İngilizce metinler
+├── tests/                    # pytest testleri (+ isteğe bağlı tarayıcı testleri)
+└── supabase_setup.sql        # Veritabanı kurulumu / güncellemesi
 ```
 
 ---
@@ -70,102 +91,72 @@ DendroCore-AI/
 ### Gereksinimler
 
 - Python 3.11 veya üzeri
-- pip (Python paket yöneticisi)
 
-### Adımlar
+### Adımlar (Windows PowerShell)
 
-1. **Repoyu klonlayın:**
-   ```bash
-   git clone https://github.com/kullanici/DendroCore-AI.git
-   cd DendroCore-AI
-   ```
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1          # macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+copy .env.example .env               # sonra .env dosyasını doldurun
+python app.py
+```
 
-2. **Sanal ortam oluşturun:**
-   ```bash
-   python -m venv venv
+Tarayıcıda: http://localhost:5000 · Yönetim paneli: http://localhost:5000/admin
 
-   # Windows
-   venv\Scripts\activate
+### `.env` ayarları
 
-   # macOS / Linux
-   source venv/bin/activate
-   ```
+| Değişken | Gerekli | Açıklama |
+|----------|---------|----------|
+| `SECRET_KEY` | Evet | Uzun rastgele değer: `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `GEMINI_API_KEY` | Evet | https://aistudio.google.com/apikey (yoksa demo modu) |
+| `SUPABASE_URL` | Kayıt için | Supabase proje adresi |
+| `SUPABASE_SERVICE_KEY` | Kayıt için | **service_role** (gizli) anahtar. Anon anahtar artık yetmez. |
+| `ADMIN_PASSWORD` | Panel için | `/admin` şifresi; boşsa panel kapalı |
+| `FLASK_DEBUG` | Hayır | Geliştirirken `1`, gerçek kullanımda `0` |
 
-3. **Bağımlılıkları yükleyin:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Supabase
 
-4. **Ortam değişkenlerini ayarlayın:**
-   ```bash
-   copy .env.example .env
-   # .env dosyasını düzenleyip değişkenleri doldurun
-   ```
+Supabase panelinde **SQL Editor**'ü açıp `supabase_setup.sql` dosyasının içeriğini çalıştırın. Dosya tekrar çalıştırılabilir ve mevcut verileri silmez; yeni sütunları/tabloları ekler ve herkese açık (anon) erişimi kapatır.
 
-5. **Uygulamayı başlatın:**
-   ```bash
-   python app.py
-   ```
-
-6. **Tarayıcıda açın:**
-   ```
-   http://localhost:5000
-   ```
+Veritabanı yoksa ya da anahtar yanlışsa uygulama yine çalışır, ancak veriler yalnızca bellekte tutulur ve admin panelinde bir uyarı görünür.
 
 ---
 
-## Kullanım Akışı
+## Testler
 
+```powershell
+pip install -r requirements-dev.txt
+python -m pytest                                   # birim + API + admin testleri
+
+# Gerçek tarayıcıda uçtan uca testler (yüklü Edge kullanılır)
+$env:RUN_BROWSER_TESTS = "1"; python -m pytest tests/test_browser.py
 ```
-QR Kod Tarat  →  Chat Sayfası Açılır  →  Entity Kendini Tanıtır  →  Sohbet Başlar
-                                                                         ↓
-                                                              Konuşma Kaydedilir
-                                                              (Akademik Araştırma)
-```
 
-### Örnek Sohbet
-
-> **Ulu Çınar:** Merhaba gezgin! Ben bu parkın en yaşlısıyım. Tam 120 yıldır buradayım. Yapraklarımda hissettiğim rüzgarın hikayesini duymak ister misin?
->
-> **Kullanıcı:** Buraya ilk dikildiğinde etraf nasıldı?
->
-> **Ulu Çınar:** O zamanlar buralar hep tarlaydı... Hemen yanımdaki şu beton yolun olduğu yerden küçük bir dere akardı. Sincap dostlarım o dereden su içerdi.
+Yeni bir metin eklediğinizde eksik İngilizce çevirileri görmek için: `python -m tests.i18n_keys`
 
 ---
 
-## API Endpoints
+## API
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
-| `GET` | `/` | Ana sayfa (landing page) |
-| `GET` | `/chat/<entity_id>` | Entity ile sohbet sayfası |
-| `POST` | `/api/chat` | Chat API (mesaj gönder/al) |
+| `POST` | `/api/chat` | `{entity_id, message, conversation_id?, consent, ins_pre?, visitor_id?}` → Server-Sent Events (`meta`, `delta`, `done`) |
+| `POST` | `/api/feedback` | `{message_id, rating: 1\|-1, reason?}` (yalnızca rızalı sohbetlerde) |
+| `POST` | `/api/survey` | `{conversation_id, value: 1-7}` sohbet sonrası doğaya yakınlık |
+| `POST` | `/api/metrics` | `{conversation_id, metrics}` isimsiz etkileşim özeti |
+| `POST` | `/api/tts` | `{message_id}` veya `{kind: "welcome", entity_id}` → `audio/wav` |
+| `GET` | `/api/entities` | Aktif karakterler |
+| `GET` | `/api/context/<entity_id>` | Mevsim / saat / hava |
+| `GET` | `/api/stats` | Toplam sohbet ve mesaj sayısı |
 
-### POST `/api/chat`
-
-**Request:**
-```json
-{
-    "entity_id": "agac-001",
-    "message": "Merhaba, kaç yaşındasın?",
-    "conversation_history": []
-}
-```
-
-**Response:**
-```json
-{
-    "reply": "Ben tam 120 yaşındayım! Yıldız Parkı bölgesinde uzun süredir buradayım.",
-    "timestamp": "2026-02-12T14:30:00",
-    "entity_id": "agac-001"
-}
-```
+Sohbet geçmişi sunucuda tutulur; istemci geçmiş göndermez. Sohbetler yalnızca onları başlatan tarayıcı oturumu tarafından sürdürülebilir.
 
 ---
 
 ## Akademik Bildirim
 
-Bu proje, insan-bilgisayar etkileşimi ve kentsel ekoloji farkındalığı üzerine deneysel bir araştırma projesidir. Platform üzerinden gerçekleştirilen konuşmalar, akademik araştırma amacıyla anonim olarak kayıt altına alınmaktadır. Kullanıcılar platforma erişerek bu durumu kabul etmiş sayılırlar.
+Bu proje, insan-bilgisayar etkileşimi ve kentsel ekoloji farkındalığı üzerine deneysel bir araştırma projesidir. Konuşmalar yalnızca katılımcının açık rızasıyla, isimsiz olarak ve akademik araştırma amacıyla kaydedilir.
 
 ---
 

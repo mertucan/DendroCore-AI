@@ -1,47 +1,17 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="tr">
+<html class="scroll-smooth" lang="{{ current_lang }}">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>{% block title %}DendroVox - Doğanın Sesi{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}DendroVox - Parklardaki ağaçlar, bitkiler ve doğa varlıklarıyla AI destekli sohbet platformu. QR kod ile erişim, 1. şahıs anlatım.{% endblock %}"/>
+{% include '_head.html' %}
+    <title>{% block title %}{{ _('DendroVox - Doğanın Sesi') }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ _('DendroVox - Parklardaki ağaçlar, bitkiler ve doğa varlıklarıyla AI destekli sohbet platformu.') }}{% endblock %}"/>
     <meta name="keywords" content="DendroVox, doğa, ağaç, yapay zeka, chatbot, park, İstanbul, ekoloji, eğitim"/>
     <meta name="author" content="DendroVox Project"/>
-    <meta name="theme-color" content="#13ec6d"/>
-    <meta property="og:title" content="DendroVox - Doğanın Sesi"/>
-    <meta property="og:description" content="Parklardaki ağaçlar ve doğa varlıklarıyla AI destekli sohbet deneyimi."/>
+    <meta property="og:title" content="{{ _('DendroVox - Doğanın Sesi') }}"/>
+    <meta property="og:description" content="{{ _('Parklardaki ağaçlar ve doğa varlıklarıyla AI destekli sohbet deneyimi.') }}"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:locale" content="tr_TR"/>
-    <link rel="canonical" href="{{ request.url }}"/>
-    <link rel="manifest" href="/static/manifest.json"/>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>"/>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <meta property="og:locale" content="{{ 'tr_TR' if current_lang == 'tr' else 'en_US' }}"/>
+    <link rel="canonical" href="{{ request.base_url }}"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#13ec6d",
-                        "primary-dark": "#0fb854",
-                        "background-light": "#f6f8f7",
-                        "background-dark": "#102218",
-                        "glass": "rgba(255, 255, 255, 0.1)",
-                        "glass-border": "rgba(255, 255, 255, 0.2)",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
     {% block head %}{% endblock %}
     <style>
         .glass-panel {
@@ -86,60 +56,67 @@
     </style>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 antialiased selection:bg-primary selection:text-black flex flex-col min-h-screen">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[200] bg-primary text-background-dark px-4 py-2 rounded-lg font-bold">{{ _('İçeriğe geç') }}</a>
+
     <!-- Offline Notification -->
-    <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 z-[100] bg-red-500 text-white text-center py-2 text-sm font-medium">
-        <span class="material-icons text-sm align-middle mr-1">wifi_off</span> İnternet bağlantınız kesildi
+    <div id="offline-banner" class="hidden fixed top-0 left-0 right-0 z-[100] bg-red-500 text-white text-center py-2 text-sm font-medium" role="status">
+        <span class="material-icons text-sm align-middle mr-1" aria-hidden="true">wifi_off</span> {{ _('İnternet bağlantınız kesildi') }}
     </div>
 
+    {% set nav_links = [('/story', _('Hikaye')), ('/how-it-works', _('Nasıl Çalışır?')), ('/features', _('Özellikler')), ('/faq', _('SSS'))] %}
+    {% set other_lang = 'en' if current_lang == 'tr' else 'tr' %}
+
     <!-- Navigation -->
-    <nav id="main-nav" class="fixed w-full z-50 transition-all duration-500 ease-in-out py-6">
+    <nav id="main-nav" class="fixed w-full z-50 transition-all duration-500 ease-in-out py-6" aria-label="{{ _('Ana menü') }}">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <a href="/" class="flex items-center gap-2 group">
                         <div class="bg-primary/10 p-1.5 rounded-lg group-hover:bg-primary/20 transition-colors">
-                            <span class="material-icons text-primary text-3xl">forest</span>
+                            <span class="material-icons text-primary text-3xl" aria-hidden="true">forest</span>
                         </div>
                         <span class="font-bold text-xl tracking-tight text-white group-hover:text-primary transition-colors">DendroVox</span>
                     </a>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-1">
-                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/story">Hikaye</a>
-                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/how-it-works">Nasıl Çalışır?</a>
-                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/features">Özellikler</a>
-                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="/faq">SSS</a>
+                        {% for href, label in nav_links %}
+                        <a class="text-slate-300 hover:text-white hover:bg-white/5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200" href="{{ href }}">{{ label }}</a>
+                        {% endfor %}
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <!-- Language -->
+                    <a href="/lang/{{ other_lang }}?next={{ request.full_path|urlencode }}" class="text-slate-300 hover:text-white px-2.5 py-1.5 rounded-full hover:bg-white/10 transition-colors text-sm font-bold flex items-center gap-1" hreflang="{{ other_lang }}" aria-label="{{ _('Dili değiştir') }}: {{ language_labels[other_lang] }}">
+                        <span class="material-icons text-lg" aria-hidden="true">translate</span>{{ other_lang|upper }}
+                    </a>
                     <!-- Dark Mode Toggle -->
-                    <button id="dark-toggle" class="text-slate-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Tema değiştir">
-                        <span class="material-icons text-xl" id="dark-icon">dark_mode</span>
+                    <button id="dark-toggle" class="text-slate-300 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="{{ _('Tema değiştir') }}">
+                        <span class="material-icons text-xl" id="dark-icon" aria-hidden="true">dark_mode</span>
                     </button>
                     <!-- CTA -->
                     <a class="hidden sm:flex bg-primary hover:bg-primary-dark text-background-dark font-bold px-6 py-2.5 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(19,236,109,0.2)] hover:shadow-[0_0_25px_rgba(19,236,109,0.4)] hover:-translate-y-0.5 items-center gap-2" href="/explore">
-                        <span>Keşfet</span>
-                        <span class="material-icons text-sm">arrow_forward</span>
+                        <span>{{ _('Keşfet') }}</span>
+                        <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
                     </a>
                     <!-- Mobile Menu Toggle -->
-                    <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2" aria-label="Menü">
-                        <span class="material-icons text-2xl">menu</span>
+                    <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2" aria-label="{{ _('Menü') }}" aria-expanded="false" aria-controls="mobile-menu">
+                        <span class="material-icons text-2xl" aria-hidden="true">menu</span>
                     </button>
                 </div>
             </div>
         </div>
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden mt-4 mx-4 glass-panel rounded-2xl p-4 space-y-2">
-            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/story">Hikaye</a>
-            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/how-it-works">Nasıl Çalışır?</a>
-            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/features">Özellikler</a>
-            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="/faq">SSS</a>
-            <a class="block bg-primary hover:bg-primary-dark text-background-dark font-bold px-4 py-3 rounded-xl text-sm text-center transition-colors mt-2" href="/explore">Keşfet</a>
+            {% for href, label in nav_links %}
+            <a class="block text-slate-200 hover:text-white hover:bg-white/10 px-4 py-3 rounded-xl text-sm font-medium transition-colors" href="{{ href }}">{{ label }}</a>
+            {% endfor %}
+            <a class="block bg-primary hover:bg-primary-dark text-background-dark font-bold px-4 py-3 rounded-xl text-sm text-center transition-colors mt-2" href="/explore">{{ _('Keşfet') }}</a>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow pt-0">
+    <main class="flex-grow pt-0" id="main-content">
         {% block content %}{% endblock %}
     </main>
 
@@ -148,24 +125,23 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center mb-12">
                 <div class="flex items-center gap-2 mb-4 md:mb-0">
-                    <span class="material-icons text-primary text-3xl">forest</span>
+                    <span class="material-icons text-primary text-3xl" aria-hidden="true">forest</span>
                     <span class="font-bold text-2xl text-slate-900 dark:text-white">DendroVox</span>
                 </div>
-                <div class="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
-                    <a href="/story" class="hover:text-primary transition-colors">Hikaye</a>
-                    <a href="/how-it-works" class="hover:text-primary transition-colors">Nasıl Çalışır?</a>
-                    <a href="/features" class="hover:text-primary transition-colors">Özellikler</a>
-                    <a href="/faq" class="hover:text-primary transition-colors">SSS</a>
-                    <a href="/explore" class="hover:text-primary transition-colors">Keşfet</a>
+                <div class="flex flex-wrap justify-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                    {% for href, label in nav_links %}
+                    <a href="{{ href }}" class="hover:text-primary transition-colors">{{ label }}</a>
+                    {% endfor %}
+                    <a href="/explore" class="hover:text-primary transition-colors">{{ _('Keşfet') }}</a>
                 </div>
             </div>
             <div class="border-t border-slate-200 dark:border-white/10 pt-8">
                 <div class="max-w-4xl mx-auto text-center">
                     <p class="text-xs text-slate-400 leading-relaxed mb-4">
-                        <strong>Akademik Sorumluluk Reddi:</strong> DendroVox, insan-bilgisayar etkileşimi ve kentsel ekoloji farkındalığı üzerine deneysel bir araştırma projesidir. Sunulan içerikler yapay zeka tarafından üretilmekte olup, ağaçların gerçek biyolojik verileriyle kurgusal anlatıyı birleştirmektedir.
+                        <strong>{{ _('Akademik Sorumluluk Reddi:') }}</strong> {{ _('DendroVox, insan-bilgisayar etkileşimi ve kentsel ekoloji farkındalığı üzerine deneysel bir araştırma projesidir. Sunulan içerikler yapay zeka tarafından üretilmekte olup, ağaçların gerçek biyolojik verileriyle kurgusal anlatıyı birleştirmektedir.') }}
                     </p>
                     <p class="text-sm text-slate-500">
-                        © 2026 DendroVox Project. Tüm hakları saklıdır.
+                        © 2026 DendroVox Project. {{ _('Tüm hakları saklıdır.') }}
                     </p>
                 </div>
             </div>
@@ -204,14 +180,9 @@
             function setDark(dark) {
                 html.classList.toggle('dark', dark);
                 darkIcon.textContent = dark ? 'light_mode' : 'dark_mode';
-                localStorage.setItem('dendrovox-theme', dark ? 'dark' : 'light');
+                try { localStorage.setItem('dendrovox-theme', dark ? 'dark' : 'light'); } catch (e) {}
             }
-
-            const saved = localStorage.getItem('dendrovox-theme');
-            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                setDark(true);
-            }
-
+            darkIcon.textContent = html.classList.contains('dark') ? 'light_mode' : 'dark_mode';
             darkToggle.addEventListener('click', () => setDark(!html.classList.contains('dark')));
 
             // Mobile Menu
@@ -219,8 +190,9 @@
             const mobileMenu = document.getElementById('mobile-menu');
             menuBtn.addEventListener('click', () => {
                 mobileMenu.classList.toggle('hidden');
-                menuBtn.querySelector('.material-icons').textContent =
-                    mobileMenu.classList.contains('hidden') ? 'menu' : 'close';
+                const open = !mobileMenu.classList.contains('hidden');
+                menuBtn.setAttribute('aria-expanded', String(open));
+                menuBtn.querySelector('.material-icons').textContent = open ? 'close' : 'menu';
             });
 
             // Offline Detection
@@ -234,5 +206,6 @@
             navigator.serviceWorker.register('/static/sw.js').catch(() => {});
         }
     </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

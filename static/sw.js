@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dendrovox-v1';
+const CACHE_NAME = 'dendrovox-v2';
 const STATIC_ASSETS = [
     '/',
     '/explore',
@@ -25,11 +25,16 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
+    if (url.origin !== self.location.origin || event.request.method !== 'GET') return;
+
+    // Yönetim paneli ve dil değişimi asla önbelleğe alınmaz.
+    if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/lang/')) return;
 
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
             fetch(event.request).catch(() =>
-                new Response(JSON.stringify({ error: 'Çevrimdışısınız' }), {
+                new Response(JSON.stringify({ error: 'Çevrimdışısınız', code: 'offline' }), {
+                    status: 503,
                     headers: { 'Content-Type': 'application/json' }
                 })
             )
@@ -40,7 +45,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(event.request)
             .then(response => {
-                if (response.ok && event.request.method === 'GET') {
+                if (response.ok) {
                     const clone = response.clone();
                     caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
                 }

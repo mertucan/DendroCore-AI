@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+{% block title %}Sohbet{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('admin.conversations') }}" class="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 font-semibold mb-4"><span class="material-icons" aria-hidden="true">arrow_back</span>Sohbetlere dön</a>
+
+<div class="card p-5 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+    <div class="flex-1">
+        <h1 class="text-2xl font-extrabold text-slate-900">{{ entity.name if entity else conv.entity_id }} ile sohbet</h1>
+        <p class="text-slate-500 mt-1">{{ conv.started_at|local_time }} · {{ messages|length }} mesaj · {{ 'İngilizce' if conv.lang == 'en' else 'Türkçe' }}</p>
+    </div>
+</div>
+
+{% if conv.flagged and not conv.flag_reviewed %}
+<div class="mb-6 rounded-2xl border-2 border-rose-300 bg-rose-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 text-rose-900">
+    <span class="material-icons text-3xl shrink-0" aria-hidden="true">report</span>
+    <p class="flex-1"><strong>Bu sohbette uygunsuz olabilecek mesaj var.</strong> Kırmızı çerçeveli mesajlara bakın. Sorun yoksa ya da gerekeni yaptıysanız "İncelendi" deyin.</p>
+    <form method="post" action="{{ url_for('admin.conversation_reviewed', conversation_id=conv.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn btn-primary"><span class="material-icons" aria-hidden="true">done_all</span>İncelendi</button>
+    </form>
+</div>
+{% endif %}
+
+{% set m = metrics %}
+<details class="card p-5 mb-6">
+    <summary class="font-bold cursor-pointer flex items-center gap-2"><span class="material-icons text-[#0a8f42]" aria-hidden="true">insights</span>Araştırma bilgileri</summary>
+    <dl class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 text-[15px]">
+        <div><dt class="text-slate-500">Doğaya yakınlık (önce)</dt><dd class="font-bold text-lg">{{ conv.ins_pre or '—' }}{% if conv.ins_pre %} / 7{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Doğaya yakınlık (sonra)</dt><dd class="font-bold text-lg">{{ conv.ins_post or '—' }}{% if conv.ins_post %} / 7{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Kaçıncı ziyareti</dt><dd class="font-bold text-lg">{{ conv.visit_number or '—' }}</dd></div>
+        <div><dt class="text-slate-500">Süre</dt><dd class="font-bold text-lg">{{ ((m.visible_ms or 0) / 60000)|round(1) if m.visible_ms is defined else '—' }}{% if m.visible_ms is defined %} dk{% endif %}</dd></div>
+        <div><dt class="text-slate-500">Hazır soru / yazılan</dt><dd class="font-bold text-lg">{{ m.quick_replies if m.quick_replies is defined else '—' }} / {{ m.typed if m.typed is defined else '—' }}</dd></div>
+        <div><dt class="text-slate-500">"Dinle" kullanımı</dt><dd class="font-bold text-lg">{{ m.listens if m.listens is defined else '—' }}</dd></div>
+        <div><dt class="text-slate-500">Bilgi kartı açıldı</dt><dd class="font-bold text-lg">{{ m.facts_opened if m.facts_opened is defined else '—' }}</dd></div>
+        <div><dt class="text-slate-500">Nasıl bitti</dt><dd class="font-bold text-lg">{{ {'limit': 'Mesaj limiti', 'finish': 'Kendisi bitirdi', 'left': 'Sayfadan ayrıldı'}.get(m.ended, '—') }}</dd></div>
+    </dl>
+</details>
+
+<div class="card p-4 sm:p-6 bg-[#f0fdf4]">
+    <ol class="space-y-4">
+        {% for msg in messages %}
+        {% set fb = feedback.get(msg.id) %}
+        <li class="flex {{ 'justify-end' if msg.role == 'user' else 'justify-start' }}">
+            <div class="max-w-[85%]">
+                <p class="text-xs font-bold mb-1 {{ 'text-right text-slate-500' if msg.role == 'user' else 'text-[#0a8f42]' }}">{{ 'Ziyaretçi' if msg.role == 'user' else (entity.name if entity else 'Karakter') }}</p>
+                <div class="p-4 rounded-2xl text-[16px] leading-relaxed whitespace-pre-wrap {{ 'bg-[#13ec6d] text-[#0b1a12] rounded-br-none' if msg.role == 'user' else 'bg-white border border-[#e3ebe6] rounded-bl-none' }} {{ 'ring-4 ring-rose-400' if msg.flag }}">{{ msg.content }}</div>
+                {% if msg.flag %}
+                <p class="text-[14px] mt-1 flex items-center justify-end gap-1 font-bold {{ 'text-rose-800' }}">
+                    <span class="material-icons text-base" aria-hidden="true">report</span>Uygunsuz olabilir: {{ flag_labels.get(msg.flag, msg.flag) }}
+                </p>
+                {% endif %}
+                {% if fb %}
+                <p class="text-[14px] mt-1 flex items-center gap-1 {{ 'text-[#0a8f42]' if fb.rating == 1 else 'text-rose-600' }}">
+                    <span class="material-icons text-base" aria-hidden="true">{{ 'thumb_up' if fb.rating == 1 else 'thumb_down' }}</span>
+                    {{ 'Ziyaretçi bu cevabı beğendi' if fb.rating == 1 else 'Ziyaretçi bu cevabı beğenmedi' }}{% if fb.reason %}: {{ reason_labels.get(fb.reason, fb.reason) }}{% endif %}
+                </p>
+                {% endif %}
+            </div>
+        </li>
+        {% else %}
+        <li class="text-center text-slate-500">Bu sohbette mesaj yok.</li>
+        {% endfor %}
+    </ol>
+</div>
+
+<section class="card p-6 mt-6 border-red-200">
+    <h2 class="text-lg font-bold text-red-800 flex items-center gap-2"><span class="material-icons" aria-hidden="true">delete</span>Bu sohbeti sil</h2>
+    <p class="help !mt-1 mb-4">Bir ziyaretçi kaydının silinmesini isterse kullanın. Silinen sohbet <strong>geri getirilemez</strong>.</p>
+    <form method="post" action="{{ url_for('admin.conversation_delete', conversation_id=conv.id) }}" onsubmit="return confirm('Bu sohbet kalıcı olarak silinecek. Emin misiniz?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn btn-danger"><span class="material-icons" aria-hidden="true">delete_forever</span>Sohbeti kalıcı olarak sil</button>
+    </form>
+</section>
+{% endblock %}

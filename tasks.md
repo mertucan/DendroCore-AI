@@ -1,6 +1,6 @@
 # DendroVox - Proje Görev Listesi
 
-> Son güncelleme: 6 Mart 2026
+> Son güncelleme: 25 Ekim 2026
 
 ---
 
@@ -55,6 +55,12 @@
 - [x] `conversation_messages` tablosu (detaylı mesaj kaydı)
   - id, conversation_id, role, content, created_at
 
+### Güvenlik
+- [x] Sohbet geçmişi sunucu tarafında (istemci geçmişine güvenilmez)
+- [x] IP ve oturum bazlı istek sınırı (Flask-Limiter)
+- [x] RLS: anon erişim kapalı, backend service_role ile çalışır
+- [x] Sohbet sahipliği kontrolü, CSRF, güvenlik başlıkları
+
 ### CRUD İşlemleri
 - [x] Entity API endpoint (`/api/entities`)
 - [x] Konuşma geçmişi kaydetme
@@ -65,7 +71,7 @@
 ## Faz 3: AI / Chatbot Entegrasyonu
 
 ### LLM Entegrasyonu
-- [x] AI provider seçimi: **Google Gemini (gemini-2.0-flash)**
+- [x] AI provider seçimi: **Google Gemini** (model zinciri .env ile ayarlanabilir)
 - [x] API entegrasyonu (`google-genai` SDK)
 - [x] System prompt tasarımı (1. şahıs anlatım)
 - [x] Entity bazlı dinamik prompt oluşturma
@@ -97,7 +103,12 @@
 - [x] Kalan mesaj sayacı (son 10 mesajda)
 - [x] Mesaj balonlarında zaman damgası
 - [x] Önerilen sorular butonu (quick replies)
-- [x] Sesli mesaj desteği (text-to-speech)
+- [x] Karakter sesleri (Gemini TTS + tarayıcı yedeği), mesaj başına "Dinle", otomatik sesli okuma
+- [x] Akışlı (streaming) cevaplar
+- [x] Cevap başına mini anket (beğeni + sebep)
+- [x] Keşif koleksiyonu ve rozetler
+- [x] Bağlama duyarlı karakterler (mevsim, saat, hava durumu)
+- [x] Çoklu dil desteği (Türkçe / İngilizce)
 
 ### Landing Page
 - [x] Harita entegrasyonu (entity konumları - Leaflet.js)
@@ -115,11 +126,11 @@
 
 ## Faz 5: Admin Panel
 
-- [ ] Admin giriş sayfası (basit auth)
-- [ ] Entity yönetimi (CRUD)
+- [x] Admin giriş sayfası (şifre + CSRF + giriş denemesi sınırı)
+- [x] Karakter yönetimi (ekle, düzenle, gizle/göster, fotoğraf, haritadan konum, ses önizleme)
 - [ ] QR kod üretim arayüzü
-- [ ] Konuşma geçmişi görüntüleme
-- [ ] Basit analitik dashboard
+- [x] Konuşma geçmişi görüntüleme ve silme
+- [x] Basit analitik dashboard
   - Toplam konuşma sayısı
   - En çok konuşulan entity
   - Günlük/haftalık kullanım grafikleri
@@ -130,17 +141,30 @@
 
 - [x] Akademik kullanım bildirimi (chat sayfasında banner)
 - [ ] KVKK uyumu detaylandırması
-- [ ] Konuşma kayıt onay mekanizması (açık rıza)
-- [ ] Veri anonimleştirme
-- [ ] Akademik rapor için veri dışa aktarımı
+- [x] Konuşma kayıt onay mekanizması (açık rıza; rızasız sohbetler kaydedilmez)
+- [x] Veri anonimleştirme (kişisel veri maskeleme, tuzlanmış oturum özeti, takma kodlar)
+- [x] Akademik rapor için veri dışa aktarımı (CSV / JSON)
 - [ ] Proje dokümantasyonu (akademik format)
+
+---
+
+## Faz 6b: Araştırma Özellikleri
+
+- [x] Sohbet öncesi / sonrası doğaya yakınlık ölçümü (INS ölçeği)
+- [x] İsimsiz etkileşim ölçümleri
+- [x] Tekrar gelen ziyaretçi takibi (rızaya bağlı, tuzlanmış kod)
+- [x] Park rotası (sıradaki durak + yol tarifi)
+- [x] Doğrulanmış bilgi kartı ("Biliyor muydun?")
+- [x] Uygunsuz mesaj işaretleme ve admin inceleme akışı
+- [ ] Deney koşulları (A/B)
+- [ ] Park günlüğü (admin notlarının sohbete yansıması)
 
 ---
 
 ## Faz 7: Test & Yayınlama
 
-- [ ] Backend unit testleri
-- [ ] Frontend tarayıcı testleri
+- [x] Backend unit testleri (pytest)
+- [x] Frontend tarayıcı testleri (Playwright)
 - [ ] Mobil cihaz testleri (iOS Safari, Android Chrome)
 - [ ] QR kod okuma testleri (farklı cihazlar)
 - [ ] Performans optimizasyonu
@@ -157,4 +181,4 @@
 - **Renk teması:** Yeşil doğa temalı (Tailwind CSS ile)
 - **Hedef:** Akademik proje olarak kullanılacak, konuşmalar kayıt altına alınacak
 - **Veritabanı:** Supabase (entegre edildi)
-- **AI Model:** Google Gemini 2.5 Flash Lite (google-genai SDK)
+- **AI Model:** Google Gemini (gemini-flash-lite-latest → 2.5-flash-lite → flash-latest), TTS: gemini-3.1-flash-tts-preview

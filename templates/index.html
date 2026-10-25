@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}DendroVox - Doğanın Sesi{% endblock %}
-{% block meta_description %}DendroVox - Parklardaki ağaçlar, bitkiler ve doğa varlıklarıyla AI destekli sohbet platformu. Doğayı keşfet, hikayelerini dinle.{% endblock %}
+{% block title %}{{ _('DendroVox - Doğanın Sesi') }}{% endblock %}
+{% block meta_description %}{{ _('DendroVox - Parklardaki ağaçlar, bitkiler ve doğa varlıklarıyla AI destekli sohbet platformu. Doğayı keşfet, hikayelerini dinle.') }}{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
@@ -16,7 +16,7 @@
 <!-- Hero Section -->
 <div class="hero-section relative min-h-screen flex flex-col justify-center overflow-hidden py-24 md:py-32">
     <div class="absolute inset-0 z-0">
-        <img alt="Sisli mistik orman, ağaç aralarından süzülen sabah ışığı" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhyOZWU9qLXIRBnmE_wPYJEu6xK6F3l6tVGW2mRHHrSRKLeqxkxSgiEBXIUgV61vs_W5N5vC5gq9Xk8z1bf7SDsDDaj-ZUmoTmTJPMBTSKpwjt4g2f1JbSTcZwt1tOyPKBMQDn9ACGcACiXnbYxxi1SXtwH9-NyosKLc2d1wS4YBKwTv0Ts4-axGASE8D7sSjLHKpD1wHOeVAaR-LcJu8F1K4dwP9VMAjjp2NyjRpdF6CrbMe1NJ2FPoE3OoHvuLz3VHWqvB3uGPgr"/>
+        <img alt="{{ _('Sisli mistik orman, ağaç aralarından süzülen sabah ışığı') }}" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhyOZWU9qLXIRBnmE_wPYJEu6xK6F3l6tVGW2mRHHrSRKLeqxkxSgiEBXIUgV61vs_W5N5vC5gq9Xk8z1bf7SDsDDaj-ZUmoTmTJPMBTSKpwjt4g2f1JbSTcZwt1tOyPKBMQDn9ACGcACiXnbYxxi1SXtwH9-NyosKLc2d1wS4YBKwTv0Ts4-axGASE8D7sSjLHKpD1wHOeVAaR-LcJu8F1K4dwP9VMAjjp2NyjRpdF6CrbMe1NJ2FPoE3OoHvuLz3VHWqvB3uGPgr"/>
         <div class="absolute inset-0 bg-background-dark/40 mix-blend-multiply"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
     </div>
@@ -24,22 +24,22 @@
         <div class="max-w-3xl mx-auto text-center">
             <div class="glass-panel p-8 md:p-12 rounded-2xl shadow-2xl">
                 <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-6 uppercase">
-                    AI Destekli Doğa Deneyimi
+                    {{ _('AI Destekli Doğa Deneyimi') }}
                 </span>
                 <h1 class="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-                    Doğanın Sessiz Tanıklarını <br/>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-200">Dinlemeye Hazır mısın?</span>
+                    {{ _('Doğanın Sessiz Tanıklarını') }} <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-200">{{ _('Dinlemeye Hazır mısın?') }}</span>
                 </h1>
                 <p class="text-lg md:text-xl text-gray-200 mb-8 font-light leading-relaxed">
-                    Parklarda yürürken ağaçların, kedi evlerinin ve doğanın size fısıldadıklarını duyun. Teknoloji ve doğanın mistik birleşimi.
+                    {{ _('Parklarda yürürken ağaçların, kedi evlerinin ve doğanın size fısıldadıklarını duyun. Teknoloji ve doğanın mistik birleşimi.') }}
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
                     <a href="/explore" class="bg-primary hover:bg-white text-background-dark font-bold py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
-                        <span>Sohbete Başla</span>
-                        <span class="material-icons text-xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        <span>{{ _('Sohbete Başla') }}</span>
+                        <span class="material-icons text-xl group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                     </a>
                     <a href="/how-it-works" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 font-medium py-3.5 px-8 rounded-xl transition-all duration-300 flex items-center justify-center">
-                        Nasıl Çalışır?
+                        {{ _('Nasıl Çalışır?') }}
                     </a>
                 </div>
             </div>
@@ -53,19 +53,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
             <div>
                 <p class="text-3xl md:text-4xl font-bold text-primary stat-number" id="stat-conversations">0</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sohbet</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ _('Sohbet') }}</p>
             </div>
             <div>
                 <p class="text-3xl md:text-4xl font-bold text-primary stat-number" id="stat-messages">0</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Mesaj</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ _('Mesaj') }}</p>
             </div>
             <div>
-                <p class="text-3xl md:text-4xl font-bold text-primary stat-number">3</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Karakter</p>
+                <p class="text-3xl md:text-4xl font-bold text-primary stat-number">{{ entities|length }}</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ _('Karakter') }}</p>
             </div>
             <div>
-                <p class="text-3xl md:text-4xl font-bold text-primary stat-number">3</p>
-                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Park</p>
+                <p class="text-3xl md:text-4xl font-bold text-primary stat-number">{{ park_count }}</p>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ _('Park') }}</p>
             </div>
         </div>
     </div>
@@ -75,30 +75,30 @@
 <section class="py-20 bg-[#f0fdf4] dark:bg-background-dark">
     <div class="container mx-auto px-4">
         <div class="text-center max-w-2xl mx-auto mb-12">
-            <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-4 uppercase">Galeri</span>
-            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">Doğanın Yüzleri</h2>
-            <p class="text-slate-600 dark:text-slate-300">Parkların sessiz sakinlerinden kareler</p>
+            <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-4 uppercase">{{ _('Galeri') }}</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{{ _('Doğanın Yüzleri') }}</h2>
+            <p class="text-slate-600 dark:text-slate-300">{{ _('Parkların sessiz sakinlerinden kareler') }}</p>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
             <div class="rounded-2xl overflow-hidden shadow-lg group row-span-2">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKp6wIgR7pHYUB1Cb0ENmKfSHPdPmObamhXRDFEArKZdRS8GhByND5soGPYKmqJvJN6vhZOd4BxHdAwr8TzZpKar4U_Lv_wRui6zI3X4P0_IbpgIOIyU5FPWpI34PQP2FEq9Xq_52bb4wnLrF5hY5tMU-Pf0E4O2ljvRqtpGyOh-vbD0te4-pCt8Ynu1YobJVTsHnRk6jU_UQEZQmktIY641fN4TFtIswFr1XPudTXgT4wTGtmOi9nIwNc7BqQg9gW7Q31X059CrC6"
-                     alt="Asırlık çınar ağacı" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
+                     alt="{{ _('Asırlık çınar ağacı') }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
             </div>
             <div class="rounded-2xl overflow-hidden shadow-lg group">
                 <img src="https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=800&auto=format&fit=crop"
-                     alt="İstanbul lalesi" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
+                     alt="{{ _('İstanbul lalesi') }}" loading="lazy" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
             </div>
             <div class="rounded-2xl overflow-hidden shadow-lg group">
                 <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800&auto=format&fit=crop"
-                     alt="Park kedisi" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
+                     alt="{{ _('Park kedisi') }}" loading="lazy" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
             </div>
             <div class="rounded-2xl overflow-hidden shadow-lg group">
                 <img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=800&auto=format&fit=crop"
-                     alt="Yeşil orman patikası" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
+                     alt="{{ _('Yeşil orman patikası') }}" loading="lazy" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
             </div>
             <div class="rounded-2xl overflow-hidden shadow-lg group">
                 <img src="https://images.unsplash.com/photo-1507041957456-9c397ce39c97?q=80&w=800&auto=format&fit=crop"
-                     alt="Gün batımında park" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
+                     alt="{{ _('Gün batımında park') }}" loading="lazy" class="w-full h-48 md:h-56 object-cover group-hover:scale-105 transition-transform duration-700"/>
             </div>
         </div>
     </div>
@@ -108,25 +108,30 @@
 <section class="py-20 bg-white dark:bg-[#0b1610]">
     <div class="container mx-auto px-4">
         <div class="text-center max-w-2xl mx-auto mb-12">
-            <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-4 uppercase">Konumlar</span>
-            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">Onları Nerede Bulabilirsin?</h2>
-            <p class="text-slate-600 dark:text-slate-300">Park sakinlerinin İstanbul'daki konumlarını keşfet</p>
+            <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-4 uppercase">{{ _('Konumlar') }}</span>
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">{{ _('Onları Nerede Bulabilirsin?') }}</h2>
+            <p class="text-slate-600 dark:text-slate-300">{{ _('Park sakinlerinin konumlarını keşfet') }}</p>
         </div>
         <div class="max-w-5xl mx-auto rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-white/10">
-            <div id="entity-map"></div>
+            <div id="entity-map" role="region" aria-label="{{ _('Karakterlerin haritası') }}"></div>
         </div>
     </div>
 </section>
+{% endblock %}
 
+{% block scripts %}
 <script>
-    // Stats
+    const ENTITIES = {{ entities|tojson }};
+    const START_LABEL = {{ _('Sohbete Başla')|tojson }};
+    const LOCALE = {{ ('tr-TR' if current_lang == 'tr' else 'en-US')|tojson }};
+
     fetch('/api/stats').then(r => r.json()).then(data => {
         const animateNumber = (el, target) => {
             let current = 0;
             const step = Math.max(1, Math.ceil(target / 40));
             const interval = setInterval(() => {
                 current = Math.min(current + step, target);
-                el.textContent = current.toLocaleString('tr-TR');
+                el.textContent = current.toLocaleString(LOCALE);
                 if (current >= target) clearInterval(interval);
             }, 30);
         };
@@ -134,30 +139,30 @@
         animateNumber(document.getElementById('stat-messages'), data.total_messages || 0);
     }).catch(() => {});
 
-    // Map
     document.addEventListener('DOMContentLoaded', () => {
+        const located = ENTITIES.filter(e => e.latitude != null && e.longitude != null);
         const map = L.map('entity-map').setView([41.05, 29.05], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        const entities = [
-            { name: 'Ulu Çınar', lat: 41.0483, lng: 29.0117, type: 'park', url: '/chat/agac-001', desc: 'Yıldız Parkı' },
-            { name: 'Tekir', lat: 40.9823, lng: 29.0517, type: 'pets', url: '/chat/kedi-001', desc: 'Göztepe Parkı' },
-            { name: 'Lale Hanım', lat: 41.1070, lng: 29.0507, type: 'local_florist', url: '/chat/cicek-001', desc: 'Emirgan Korusu' },
-        ];
-
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
         const greenIcon = L.divIcon({
             html: '<div style="background:#13ec6d;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
             iconSize: [28, 28], className: ''
         });
-
-        entities.forEach(e => {
-            L.marker([e.lat, e.lng], { icon: greenIcon })
-                .addTo(map)
-                .bindPopup(`<div style="text-align:center;font-family:Inter,sans-serif;"><b>${e.name}</b><br/><small>${e.desc}</small><br/><a href="${e.url}" style="color:#13ec6d;font-weight:bold;">Sohbete Başla →</a></div>`);
+        located.forEach(e => {
+            // Popup içeriği DOM ile kurulur: admin panelinden gelen metinler HTML olarak yorumlanmaz.
+            const box = document.createElement('div');
+            box.style.cssText = 'text-align:center;font-family:Inter,sans-serif;';
+            const title = document.createElement('b');
+            title.textContent = e.name;
+            const place = document.createElement('small');
+            place.textContent = e.location || '';
+            const link = document.createElement('a');
+            link.href = '/chat/' + encodeURIComponent(e.id);
+            link.style.cssText = 'color:#0fb854;font-weight:bold;';
+            link.textContent = START_LABEL + ' →';
+            box.append(title, document.createElement('br'), place, document.createElement('br'), link);
+            L.marker([e.latitude, e.longitude], { icon: greenIcon }).addTo(map).bindPopup(box);
         });
+        if (located.length > 1) map.fitBounds(located.map(e => [e.latitude, e.longitude]), { padding: [40, 40] });
     });
-
 </script>
 {% endblock %}

@@ -1,106 +1,99 @@
 {% extends "base.html" %}
 
-{% block title %}DendroVox - Keşfet{% endblock %}
+{% block title %}{{ _('DendroVox - Keşfet') }}{% endblock %}
 
 {% block content %}
 <section class="py-24 bg-[#f0fdf4] dark:bg-background-dark min-h-screen">
     <div class="container mx-auto px-4 pt-16">
-        <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="text-center max-w-3xl mx-auto mb-10">
             <span class="inline-block py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-semibold tracking-wider mb-6 uppercase">
-                Park Sakinleri
+                {{ _('Park Sakinleri') }}
             </span>
-            <h2 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
-                Kiminle Konuşmak İstersin?
-            </h2>
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+                {{ _('Kiminle Konuşmak İstersin?') }}
+            </h1>
             <p class="text-lg text-slate-600 dark:text-slate-300">
-                Aşağıdaki karakterlerden birini seçip hemen sohbete başlayabilirsin. Onların anlatacak çok hikayesi var.
+                {{ _('Aşağıdaki karakterlerden birini seçip hemen sohbete başlayabilirsin. Onların anlatacak çok hikayesi var.') }}
             </p>
         </div>
 
+        <!-- Keşif koleksiyonu -->
+        <div id="collection-card" class="max-w-3xl mx-auto mb-12 bg-white dark:bg-[#1a2c24] rounded-2xl border border-primary/20 shadow-sm p-5 flex flex-col sm:flex-row items-center gap-5">
+            <div class="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                <span class="material-icons text-primary text-4xl" id="badge-icon" aria-hidden="true">explore</span>
+            </div>
+            <div class="flex-1 w-full text-center sm:text-left">
+                <p class="text-xs font-semibold uppercase tracking-wider text-primary">{{ _('Keşif Koleksiyonun') }}</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-white" id="collection-title">{{ _('Henüz kimseyle tanışmadın') }}</p>
+                <div class="mt-2 h-2.5 rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="{{ entities|length }}" aria-valuenow="0" id="collection-bar">
+                    <div class="h-full bg-primary rounded-full transition-all duration-700" style="width:0%" id="collection-fill"></div>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">{{ _('Her karakterle sohbet ettiğinde koleksiyonuna eklenir ve yeni rozetler kazanırsın.') }}</p>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            
-            <!-- Karakter 1: Asırlık Çınar -->
-            <a href="/chat/agac-001" class="group relative bg-white dark:bg-[#1a2c24] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100 dark:border-white/5">
+            {% for e in entities %}
+            <a href="/chat/{{ e.id }}" data-entity="{{ e.id }}" class="entity-card group relative bg-white dark:bg-[#1a2c24] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100 dark:border-white/5">
                 <div class="h-64 overflow-hidden relative">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKp6wIgR7pHYUB1Cb0ENmKfSHPdPmObamhXRDFEArKZdRS8GhByND5soGPYKmqJvJN6vhZOd4BxHdAwr8TzZpKar4U_Lv_wRui6zI3X4P0_IbpgIOIyU5FPWpI34PQP2FEq9Xq_52bb4wnLrF5hY5tMU-Pf0E4O2ljvRqtpGyOh-vbD0te4-pCt8Ynu1YobJVTsHnRk6jU_UQEZQmktIY641fN4TFtIswFr1XPudTXgT4wTGtmOi9nIwNc7BqQg9gW7Q31X059CrC6" 
-                         alt="Asırlık Çınar Ağacı" 
-                         class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                    {% if e.image_url %}
+                    <img src="{{ e.image_url }}" alt="{{ e.name }}" loading="lazy" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
+                    {% else %}
+                    <div class="w-full h-full bg-gradient-to-br from-emerald-300 to-green-700 flex items-center justify-center">
+                        <span class="material-icons text-white/80 text-8xl" aria-hidden="true">{{ e.icon }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="met-stamp hidden absolute top-4 right-4 z-20 bg-primary text-background-dark text-xs font-bold px-3 py-1 rounded-full shadow-lg items-center gap-1">
+                        <span class="material-icons text-sm" aria-hidden="true">verified</span> {{ _('Tanıştın') }}
+                    </div>
                     <div class="absolute bottom-4 left-4 z-20">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mb-2">
-                            <span class="material-icons text-sm mr-1">park</span> Ağaç
+                            <span class="material-icons text-sm mr-1" aria-hidden="true">{{ e.icon }}</span> {{ _(type_labels.get(e.type, 'Park nesnesi')) }}
                         </span>
-                        <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">Ulu Çınar</h3>
+                        <h2 class="text-xl font-bold text-white group-hover:text-primary transition-colors">{{ e.name }}</h2>
                     </div>
                 </div>
                 <div class="p-6">
                     <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
-                        <span class="material-icons text-sm">location_on</span> Yıldız Parkı, İstanbul
+                        <span class="material-icons text-sm" aria-hidden="true">location_on</span> {{ e.location }}
                     </p>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6 line-clamp-3">
-                        Ben bu parkın en yaşlısıyım. Tam 120 yıldır buradayım. Padişahları gördüm, aşklara şahit oldum. Tarihi benden dinle.
-                    </p>
+                    <p class="text-slate-600 dark:text-slate-300 mb-6 line-clamp-3">{{ e.description }}</p>
                     <div class="flex items-center text-primary font-semibold text-sm group-hover:underline">
-                        Sohbete Başla <span class="material-icons text-sm ml-1">arrow_forward</span>
+                        {{ _('Sohbete Başla') }} <span class="material-icons text-sm ml-1" aria-hidden="true">arrow_forward</span>
                     </div>
                 </div>
             </a>
-
-            <!-- Karakter 2: İstanbul Lalesi -->
-            <a href="/chat/cicek-001" class="group relative bg-white dark:bg-[#1a2c24] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100 dark:border-white/5">
-                <div class="h-64 overflow-hidden relative">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-                    <img src="https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=2232&auto=format&fit=crop" 
-                         alt="İstanbul Lalesi" 
-                         class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
-                    <div class="absolute bottom-4 left-4 z-20">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800 mb-2">
-                            <span class="material-icons text-sm mr-1">local_florist</span> Çiçek
-                        </span>
-                        <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">Lale Hanım</h3>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
-                        <span class="material-icons text-sm">location_on</span> Emirgan Korusu, İstanbul
-                    </p>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6 line-clamp-3">
-                        İstanbul'un simgesi, baharın müjdecisiyim. Zarif ve narin yapımla sana mevsimlerin dansını anlatabilirim.
-                    </p>
-                    <div class="flex items-center text-primary font-semibold text-sm group-hover:underline">
-                        Sohbete Başla <span class="material-icons text-sm ml-1">arrow_forward</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Karakter 3: Tekir Kedi -->
-            <a href="/chat/kedi-001" class="group relative bg-white dark:bg-[#1a2c24] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-slate-100 dark:border-white/5">
-                <div class="h-64 overflow-hidden relative">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-                    <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=2043&auto=format&fit=crop" 
-                         alt="Tekir Kedi" 
-                         class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700">
-                    <div class="absolute bottom-4 left-4 z-20">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 mb-2">
-                            <span class="material-icons text-sm mr-1">pets</span> Hayvan
-                        </span>
-                        <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">Tekir</h3>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4 flex items-center gap-1">
-                        <span class="material-icons text-sm">location_on</span> Göztepe Parkı, İstanbul
-                    </p>
-                    <p class="text-slate-600 dark:text-slate-300 mb-6 line-clamp-3">
-                        Miyav! Buranın kralı benim. Hangi bankta en iyi güneşlenilir, kim en lezzetli mamayı verir benden sorulur.
-                    </p>
-                    <div class="flex items-center text-primary font-semibold text-sm group-hover:underline">
-                        Sohbete Başla <span class="material-icons text-sm ml-1">arrow_forward</span>
-                    </div>
-                </div>
-            </a>
-
+            {% else %}
+            <p class="md:col-span-3 text-center text-slate-500">{{ _('Şu an sohbet edilebilecek bir karakter yok.') }}</p>
+            {% endfor %}
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/collection.js"></script>
+<script>
+    (function () {
+        const T = {{ collection_strings|tojson }};
+        const BADGE_NAMES = {{ {'Filiz': _('Filiz'), 'Fidan': _('Fidan'), 'Ulu Ağaç': _('Ulu Ağaç'), 'Orman Bekçisi': _('Orman Bekçisi')}|tojson }};
+        const ids = {{ entities|map(attribute='id')|list|tojson }};
+        const count = DendroCollection.count(ids);
+        document.querySelectorAll('.entity-card').forEach(card => {
+            if (DendroCollection.has(card.dataset.entity)) {
+                const stamp = card.querySelector('.met-stamp');
+                stamp.classList.remove('hidden');
+                stamp.classList.add('flex');
+            }
+        });
+        if (!count) return;
+        const badge = DendroCollection.badge(count, ids.length);
+        const progress = T['Koleksiyon: {count}/{total}'].replace('{count}', count).replace('{total}', ids.length);
+        document.getElementById('collection-title').textContent = badge ? `${BADGE_NAMES[badge.key]} · ${progress}` : progress;
+        document.getElementById('badge-icon').textContent = badge ? badge.icon : 'explore';
+        document.getElementById('collection-fill').style.width = `${Math.round(100 * count / ids.length)}%`;
+        document.getElementById('collection-bar').setAttribute('aria-valuenow', String(count));
+    })();
+</script>
 {% endblock %}

@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% block title %}Karakterler{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-3xl font-extrabold text-slate-900">Karakterler</h1>
+        <p class="text-slate-600 mt-1">Parktaki konuşan ağaçlar, kediler, çiçekler ve nesneler.</p>
+    </div>
+    <a href="{{ url_for('admin.entity_new') }}" class="btn btn-primary text-lg"><span class="material-icons" aria-hidden="true">add</span>Yeni Karakter Ekle</a>
+</div>
+
+<div class="tip mb-6 flex gap-3">
+    <span class="material-icons shrink-0" aria-hidden="true">lightbulb</span>
+    <p class="text-[15px]">Bir karakteri <strong>gizlerseniz</strong> silinmez, sadece ziyaretçiler göremez. İstediğiniz zaman tekrar <strong>gösterebilirsiniz</strong>.</p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for e in entities %}
+    <article class="card overflow-hidden flex flex-col {{ 'opacity-70' if not e.is_active }}">
+        <div class="h-40 relative bg-gradient-to-br from-emerald-200 to-green-600">
+            {% if e.image_url %}<img src="{{ e.image_url }}" alt="" class="w-full h-full object-cover" loading="lazy"/>{% else %}
+            <div class="w-full h-full flex items-center justify-center"><span class="material-icons text-white/80 text-7xl" aria-hidden="true">{{ {'tree':'park','cat':'pets','flower':'local_florist'}.get(e.type, 'chair') }}</span></div>{% endif %}
+            <span class="absolute top-3 left-3 text-sm font-bold px-3 py-1 rounded-full {{ 'bg-green-100 text-green-900' if e.is_active else 'bg-slate-700 text-white' }}">
+                {{ 'Görünüyor' if e.is_active else 'Gizli' }}
+            </span>
+        </div>
+        <div class="p-5 flex-1 flex flex-col">
+            <h2 class="text-xl font-bold text-slate-900">{{ e.name }}</h2>
+            <p class="text-[15px] text-slate-500 mt-0.5">{{ type_labels.get(e.type, 'Park nesnesi') }} · {{ e.location }}</p>
+            <p class="text-[15px] text-slate-600 mt-2 flex items-center gap-1"><span class="material-icons text-lg text-slate-400" aria-hidden="true">forum</span>Son 30 günde {{ counts.get(e.id, 0) }} sohbet</p>
+            <div class="mt-auto pt-4 grid grid-cols-2 gap-2">
+                <a href="{{ url_for('admin.entity_edit', entity_id=e.id) }}" class="btn btn-light"><span class="material-icons text-xl" aria-hidden="true">edit</span>Düzenle</a>
+                <form method="post" action="{{ url_for('admin.entity_toggle', entity_id=e.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button class="btn btn-light w-full"><span class="material-icons text-xl" aria-hidden="true">{{ 'visibility_off' if e.is_active else 'visibility' }}</span>{{ 'Gizle' if e.is_active else 'Göster' }}</button>
+                </form>
+                {% if e.is_active %}
+                <a href="/chat/{{ e.id }}" target="_blank" rel="noopener" class="btn btn-light col-span-2"><span class="material-icons text-xl" aria-hidden="true">chat</span>Sohbeti dene</a>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% else %}
+    <div class="card p-8 text-center sm:col-span-2 lg:col-span-3">
+        <p class="text-lg">Henüz hiç karakter yok.</p>
+        <a href="{{ url_for('admin.entity_new') }}" class="btn btn-primary mt-4">İlk karakteri ekleyin</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

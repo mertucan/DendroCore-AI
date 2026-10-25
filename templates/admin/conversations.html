@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% block title %}Sohbetler{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-extrabold text-slate-900">Sohbetler</h1>
+<p class="text-slate-600 mt-1 mb-6">Ziyaretçilerin karakterlerle yaptığı ve kaydedilmesine izin verdiği sohbetler. En yenisi en üstte.</p>
+
+<form method="get" class="card p-5 mb-6 grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+    <div>
+        <label for="karakter" class="label">Karakter</label>
+        <select id="karakter" name="karakter" class="field">
+            <option value="">Hepsi</option>
+            {% for e in entities %}<option value="{{ e.id }}" {{ 'selected' if filters.karakter == e.id }}>{{ e.name }}</option>{% endfor %}
+        </select>
+    </div>
+    <div>
+        <label for="baslangic" class="label">Bu tarihten</label>
+        <input id="baslangic" name="baslangic" type="date" value="{{ filters.baslangic }}" class="field"/>
+    </div>
+    <div>
+        <label for="bitis" class="label">Bu tarihe kadar</label>
+        <input id="bitis" name="bitis" type="date" value="{{ filters.bitis }}" class="field"/>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-primary flex-1"><span class="material-icons" aria-hidden="true">search</span>Göster</button>
+        {% if filters.karakter or filters.baslangic or filters.bitis or filters.incelenecek %}
+        <a href="{{ url_for('admin.conversations') }}" class="btn btn-light" title="Filtreleri temizle" aria-label="Filtreleri temizle"><span class="material-icons" aria-hidden="true">close</span></a>
+        {% endif %}
+    </div>
+    <label class="sm:col-span-4 flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" name="incelenecek" class="w-6 h-6 rounded" {{ 'checked' if filters.incelenecek }} onchange="this.form.submit()"/>
+        <span class="font-semibold">Sadece incelenmesi gerekenleri göster</span>
+    </label>
+</form>
+
+<p class="font-semibold text-slate-700 mb-3">{{ total }} sohbet bulundu</p>
+
+{% if rows %}
+<ul class="space-y-3">
+    {% for row in rows %}
+    {% set like = likes.get(row.id, {'up': 0, 'down': 0}) %}
+    <li>
+        <a href="{{ url_for('admin.conversation_detail', conversation_id=row.id) }}" class="card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-primary hover:shadow-md transition">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <span class="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0"><span class="material-icons text-[#0a8f42]" aria-hidden="true">forum</span></span>
+                <div class="min-w-0">
+                    <p class="font-bold text-lg truncate">{{ names.get(row.entity_id, row.entity_id) }}
+                        {% if row.flagged and not row.flag_reviewed %}<span class="ml-1 align-middle inline-flex items-center gap-1 text-sm font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800"><span class="material-icons text-base" aria-hidden="true">report</span>İncelenecek</span>{% endif %}
+                    </p>
+                    <p class="text-[15px] text-slate-500">{{ row.started_at|local_time }} · {{ 'İngilizce' if row.lang == 'en' else 'Türkçe' }}{% if not row.consent_version %} · <span title="Onay ekranından önceki dönemden">eski kayıt</span>{% endif %}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-[15px] text-slate-600">
+                <span class="flex items-center gap-1"><span class="material-icons text-lg" aria-hidden="true">chat_bubble_outline</span>{{ row.message_count or 0 }} mesaj</span>
+                {% if like.up %}<span class="flex items-center gap-1 text-[#0a8f42]"><span class="material-icons text-lg" aria-hidden="true">thumb_up</span>{{ like.up }}</span>{% endif %}
+                {% if like.down %}<span class="flex items-center gap-1 text-rose-600"><span class="material-icons text-lg" aria-hidden="true">thumb_down</span>{{ like.down }}</span>{% endif %}
+                <span class="btn btn-light !min-h-0 !py-2">Oku<span class="material-icons text-xl" aria-hidden="true">chevron_right</span></span>
+            </div>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% if pages > 1 %}
+{% set query = {'karakter': filters.karakter, 'baslangic': filters.baslangic, 'bitis': filters.bitis, 'incelenecek': filters.incelenecek} %}
+<nav class="flex items-center justify-between mt-6" aria-label="Sayfalar">
+    {% if page > 1 %}<a class="btn btn-light" href="{{ url_for('admin.conversations', sayfa=page - 1, **query) }}"><span class="material-icons" aria-hidden="true">chevron_left</span>Daha yeni</a>{% else %}<span></span>{% endif %}
+    <span class="font-semibold text-slate-600">Sayfa {{ page }} / {{ pages }}</span>
+    {% if page < pages %}<a class="btn btn-light" href="{{ url_for('admin.conversations', sayfa=page + 1, **query) }}">Daha eski<span class="material-icons" aria-hidden="true">chevron_right</span></a>{% else %}<span></span>{% endif %}
+</nav>
+{% endif %}
+{% else %}
+<div class="card p-10 text-center text-slate-500">
+    <span class="material-icons text-5xl text-slate-300" aria-hidden="true">forum</span>
+    <p class="text-lg mt-2">Bu seçimle eşleşen sohbet yok.</p>
+</div>
+{% endif %}
+{% endblock %}

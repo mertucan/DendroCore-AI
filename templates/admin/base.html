@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+{% include '_head.html' %}
+    <script>document.documentElement.classList.remove('dark');</script>
+    <meta name="robots" content="noindex, nofollow"/>
+    <title>{% block title %}Yönetim{% endblock %} · DendroVox</title>
+    <style>
+        body { font-size: 17px; }
+        .card { background: #fff; border: 1px solid #e3ebe6; border-radius: 1.25rem; box-shadow: 0 1px 2px rgba(16,34,24,.04); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; font-weight: 700; border-radius: .9rem; padding: .8rem 1.25rem; transition: background-color .15s, box-shadow .15s, transform .1s; min-height: 48px; }
+        .btn:active { transform: translateY(1px); }
+        .btn:focus-visible, .field:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #0fb854; outline-offset: 2px; }
+        .btn-primary { background: #13ec6d; color: #0b1a12; }
+        .btn-primary:hover { background: #0fb854; }
+        .btn-light { background: #eef4f0; color: #1e3a2b; }
+        .btn-light:hover { background: #e0ebe4; }
+        .btn-danger { background: #fee2e2; color: #991b1b; }
+        .btn-danger:hover { background: #fecaca; }
+        .field { width: 100%; border: 2px solid #d5e1da; border-radius: .9rem; padding: .75rem 1rem; font-size: 17px; background: #fff; }
+        .field:focus { border-color: #13ec6d; box-shadow: 0 0 0 4px rgba(19,236,109,.15); outline: none; }
+        .field.has-error { border-color: #ef4444; }
+        .label { display: block; font-weight: 700; color: #1e293b; margin-bottom: .35rem; }
+        .help { color: #64748b; font-size: 15px; margin-top: .35rem; line-height: 1.45; }
+        .error-text { color: #b91c1c; font-weight: 600; font-size: 15px; margin-top: .35rem; display: flex; gap: .3rem; align-items: flex-start; }
+        .nav-link { display: flex; align-items: center; gap: .55rem; padding: .7rem 1rem; border-radius: .9rem; font-weight: 600; color: #335244; }
+        .nav-link:hover { background: #eef4f0; }
+        .nav-link.active { background: #dcfce7; color: #065f46; }
+        .tip { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 1rem; padding: 1rem 1.15rem; color: #14532d; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="font-display bg-[#f4f7f5] text-slate-800 antialiased min-h-screen pb-24 md:pb-0">
+{% set nav = [
+    ('admin.dashboard', 'home', 'Ana Sayfa'),
+    ('admin.entities', 'park', 'Karakterler'),
+    ('admin.conversations', 'forum', 'Sohbetler'),
+    ('admin.export_page', 'download', 'Verileri İndir'),
+] %}
+{% set section_of = {
+    'admin.entity_new': 'admin.entities', 'admin.entity_edit': 'admin.entities',
+    'admin.conversation_detail': 'admin.conversations',
+} %}
+{% set current_section = section_of.get(request.endpoint, request.endpoint) %}
+{% if session.get('is_admin') %}
+<header class="bg-white border-b border-[#e3ebe6] sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+        <a href="{{ url_for('admin.dashboard') }}" class="flex items-center gap-2 shrink-0">
+            <span class="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center"><span class="material-icons text-[#0fb854]" aria-hidden="true">forest</span></span>
+            <span class="leading-tight"><span class="block font-extrabold text-slate-900">DendroVox</span><span class="block text-xs text-slate-500">Yönetim Paneli</span></span>
+        </a>
+        <nav class="hidden md:flex items-center gap-1 flex-1" aria-label="Yönetim menüsü">
+            {% for endpoint, icon, label in nav %}
+            <a href="{{ url_for(endpoint) }}" class="nav-link {{ 'active' if current_section == endpoint }}" {{ 'aria-current="page"'|safe if current_section == endpoint }}><span class="material-icons text-xl" aria-hidden="true">{{ icon }}</span>{{ label }}</a>
+            {% endfor %}
+        </nav>
+        <div class="flex items-center gap-2 ml-auto">
+            <a href="/" target="_blank" rel="noopener" class="btn btn-light !py-2 !min-h-0 hidden sm:inline-flex" title="Ziyaretçilerin gördüğü siteyi yeni sekmede açar"><span class="material-icons text-xl" aria-hidden="true">open_in_new</span>Siteyi Gör</a>
+            <form method="post" action="{{ url_for('admin.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button class="btn btn-light !py-2 !min-h-0"><span class="material-icons text-xl" aria-hidden="true">logout</span>Çıkış</button>
+            </form>
+        </div>
+    </div>
+</header>
+<!-- Telefon için alt menü -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-[#e3ebe6] grid grid-cols-4" aria-label="Yönetim menüsü">
+    {% for endpoint, icon, label in nav %}
+    <a href="{{ url_for(endpoint) }}" class="flex flex-col items-center gap-0.5 py-2.5 text-xs font-semibold {{ 'text-[#0a8f42]' if current_section == endpoint else 'text-slate-500' }}">
+        <span class="material-icons text-2xl" aria-hidden="true">{{ icon }}</span>{{ label }}
+    </a>
+    {% endfor %}
+</nav>
+{% endif %}
+
+<main class="max-w-6xl mx-auto px-4 py-6 md:py-8">
+    {% if db_warning and session.get('is_admin') %}
+    <div class="mb-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 flex gap-3 text-amber-900" role="alert">
+        <span class="material-icons text-3xl shrink-0" aria-hidden="true">warning</span>
+        <div><p class="font-bold">Teknik bir ayar eksik</p><p class="text-[15px]">{{ db_warning }}</p><p class="text-[15px] mt-1">Bu mesajı projeyi kuran kişiye iletebilirsiniz.</p></div>
+    </div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="mb-6 rounded-2xl p-4 flex items-center gap-3 font-semibold {{ 'bg-green-100 text-green-900 border-2 border-green-300' if category == 'success' else 'bg-red-50 text-red-800 border-2 border-red-200' }}" role="status">
+        <span class="material-icons text-2xl" aria-hidden="true">{{ 'check_circle' if category == 'success' else 'error' }}</span>{{ message }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body>
+</html>
